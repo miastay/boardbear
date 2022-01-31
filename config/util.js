@@ -1,0 +1,1 @@
+let socksrc = "https://ryantaylor.link/boardbear/"
