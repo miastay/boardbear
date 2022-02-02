@@ -42,6 +42,21 @@ window.onload = async () => {
     var clear = document.getElementById("clear");
     var errTooltip = document.getElementById("err_tooltip")
 
+    var userSettingsButtons = [];
+
+    var getUserEditBox =(user) => {
+      var div = document.createElement("div");
+      div.id = "edit" + user.id;
+      div.className = "useredit closed";
+      if(user.id == myUser.id) {
+
+      }
+      var inner = document.createElement("span");
+      inner.textContent = "this is the edit box for " + user.id;
+      div.appendChild(inner);
+      return div;
+    }
+
     const userHasAuth = () => {
       return myUser.auth == "owner";
     }
@@ -56,6 +71,13 @@ window.onload = async () => {
     var clearCanvas = () => {
       canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     }
+    var toggleUserEdit = (elem) => {
+      if(elem.className === "useredit open") {
+        elem.className = "useredit closed";
+      } else {
+        elem.className = "useredit open";
+      }
+    }
     
     var setUsers =(usersdata)=> {
       userElem.innerHTML = "";
@@ -68,7 +90,21 @@ window.onload = async () => {
         c += (user.auth == "owner" ? " owner" : "");
         c.trim();
         users.push(user);
-        userElem.innerHTML += `<div id=${user.id} class="c${c}">${user.id == id ? user.id + " (me)" : (user.auth == "owner" ? user.id + " (owner)" : user.id)}</div><br>`;
+
+        var div = document.createElement("div");
+        div.className = `c${c}`;
+        div.id = user.id;
+        div.textContent = (user.id == id ? user.id + " (me)" : (user.auth == "owner" ? user.id + " (owner)" : user.id));
+        
+        var userSettings = document.createElement("img");
+        userSettings.id = user.id;
+        userSettings.className = "usersettings";
+        userSettings.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAABcUlEQVRIia2WvU7DMBSFv9KWofAC0Lmq+Bk6MSGViQ4gGCjPhECgvhAKkAJSgLLwGmyNMhTSMuQGnMg/acKRrpTY95xzbceOaxTHKrAmzyHwtQS3EN6BhcT4v8WbwEwxiIB6WbEeEAADpW1bEU+jo/QPhNMrIv4pAnNgBJyRTEne4A44BW4kdyFcq4mvEVo2HmwG+8B3BfEYOLAZAFxVMLjIizU0Bq8G4xB4kec9YF2T82irvAnsAs+aynxgQ8ndRL/wHrAlWplRTMh+52pMc+KqSWjgzIA30aZlSErj1jJqz8FtrVjIKWol+37RIFmcyFDFlGQ68mhjnqKIZI0yH1Ed6AJPGsI4Z9KWonSL3MFxTp0bqgpFwLNUfmwTTjEykIvEtUv8kL+Dq0zMgSObQVBBPI3AZqAe1zFwCQzR79p74ERyYmlzHtepiQ/0lbYdjUFX6e8LxyluQulfZpGdDMkN4kN5n5BMixOFtrqg1LXlB2vw9K/XiPbzAAAAAElFTkSuQmCC"
+        userSettings.onclick = function() { toggleUserEdit(document.getElementById("edit"+($(this)[0].id))) }
+        div.appendChild(userSettings);
+        userElem.appendChild(div);
+        userElem.appendChild(getUserEditBox(users.find(x => x.id == userSettings.id)));
+        userElem.appendChild(document.createElement("br"));
         document.getElementById(user.id).style.setProperty('box-shadow', `10px 0px 0px ${user.color} inset`);
       }
       clear.className = myUser.auth;

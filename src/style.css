@@ -2,6 +2,9 @@
     user-select: none;
     font-family: 'Work Sans', sans-serif;
 }
+div {
+    border-radius: 2vw;
+}
 :root {
     --mouse-x: 0;
     --mouse-y: 0;
@@ -45,6 +48,19 @@
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
     background: white;
 }
+.usersettings {
+    position: absolute;
+    padding: 1vw;
+    padding-top: 0.6vw;
+    transform: scale(0) rotate(180deg);
+    opacity: 0.5;
+    transition: transform 0.2s linear, opacity 0.4s ease;
+    right: 1vw;
+} 
+.usersettings:hover {
+    opacity: 0.7;
+}
+
 #clear {
     padding: 1.5vw;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -88,6 +104,33 @@
     line-height: 3vw;
     float: right;
     box-sizing: border-box;
+    border-radius: 0;
     box-shadow: 10px 0px 0px white inset;
     padding-left: 1vw;
+    
+}
+.c:hover .usersettings {
+    transform: scale(1) rotate(0deg);
+}
+
+.useredit {
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 1vw;
+    transform-origin: top;
+    transition: height 0.6s ease, padding 0.6s ease, margin 0.6s ease;
+}
+.useredit.closed {
+    margin-top: 3vw;
+    height: 0vw;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.useredit.open {
+    margin-top: 4vw;
+    height: 7vw;
+    padding-top: 1vw;
+    padding-bottom: 1vw;
 }
