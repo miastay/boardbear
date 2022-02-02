@@ -2,26 +2,13 @@
     <head>
         <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
         <script src="/boardbear.js"></script>
-        <style>
-            * {
-                user-select: none;
-            }
-            #canvas {
-                position: absolute;
-                left: 10px;
-                border: solid black 1px;
-            }
-            #id {
-                position: absolute;
-                z-index: 10;
-                background: white;
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" href="/boardbear.css"/>
     </head>
     <body>
         <span id="id"></span>
-        <canvas id="canvas" width="500" height="500">
-
-        </canvas>
+        <div id="main">
+            <canvas id="canvas" width="500" height="500"></canvas>
+        </div>
+        <div id="users"></div>
     </body>
 </html>

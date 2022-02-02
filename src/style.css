@@ -1,0 +1,50 @@
+* {
+    user-select: none;
+}
+#main {
+    width: 90vw;
+    height: 90vh;
+}
+#canvas {
+    position: absolute;
+    left: 10px;
+    border: solid black 1px;
+}
+#users {
+    width: 300px;
+    position: absolute;
+    right: 1vw;
+    top: 1vw;
+    height: 90vh;
+    background: white;
+    border-radius: 2vw;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 1vw;
+}
+#id {
+    position: absolute;
+    z-index: 10;
+    background: white;
+}
+.owner {
+    color: rgb(255, 174, 0);
+}
+.guest {
+    color: gray;
+}
+.me {
+    color: turquoise;
+}
+.me.owner {
+    color: rgb(255, 174, 0);
+}
+.p {
+    width: 50px;
+    height: 10px;
+    display: inline;
+    background: blue;
+}
+.c {
+    display: inline;
+    padding: 1vw;
+}
