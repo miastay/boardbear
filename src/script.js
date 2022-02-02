@@ -1,7 +1,8 @@
 canvases = [];
 
 var randomColor = () => {
-  return 'hsl(' + Number.parseInt(Math.random()*360) + ', ' + Number.parseInt((Math.random()*40) + 60) + ', ' + Number.parseInt((Math.random()*40) + 60) + ')';
+  return 'rgb(' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ')';
+  //return 'hsl(' + Number.parseInt(Math.random()*360) + ', ' + Number.parseInt((Math.random()*40) + 60) + ', ' + Number.parseInt((Math.random()*40) + 60) + ')';
 }
 
 window.onload = async () => {
@@ -27,7 +28,8 @@ window.onload = async () => {
   var pressed = false;
   var lastpos = {x: 0, y: 0}
   var id;
-  var myUser = {'id': 0, 'auth': 0, 'color': 'hsl(0, 0, 0)'};
+  var myUser = {'id': 0, 'auth': 0, 'color': 'rgb(0, 0, 0)'};
+  var users = []
   
   async function runSession(address) {
     const ws = new WebSocket(address);
@@ -36,20 +38,20 @@ window.onload = async () => {
     var canvas = document.getElementById("canvas");
 
     var userElem = document.getElementById("users");
-    var users = []
 
     var sendColor = (color) => {
       ws.send(JSON.stringify({'type':'op', 'data':{'type':'usercolor', 'data':{color}}}))
     }
     var receiveColor = (color) => {
       myUser.color = color[0].color;
+      document.getElementById(myUser.id).style.background = myUser.color;
     }
     
     var setUsers =(usersdata)=> {
       console.log(usersdata);
       userElem.innerHTML = "";
-      users = usersdata.users;
-      for(user of usersdata.users) {
+      users = [];
+      for(user of usersdata.userset) {
         if(user.id == id) { myUser = user; }
         var c = "";
         c += (user.auth == "guest" ? " guest" : "");
@@ -57,7 +59,7 @@ window.onload = async () => {
         c += (user.auth == "owner" ? " owner" : "");
         c.trim();
         users.push(user);
-        userElem.innerHTML += `<div class="c${c}"><div class="p" style="background: ${user.color}">&nbsp;</div>  ${user.id == id ? id + " (me)" : user.id}</div><br>`;
+        userElem.innerHTML += `<div class="c${c}"><div id="${user.id}" class="p"></div>  ${user.id == id ? user.id + " (me)" : (user.auth == "owner" ? user.id + " (owner)" : user.id)}</div><br>`;
       }
     }
 
@@ -92,6 +94,7 @@ window.onload = async () => {
       {
         
         data = JSON.parse(data);
+        console.log(data)
         switch(data.type) {
           case 'auth':
 
@@ -150,7 +153,7 @@ window.onload = async () => {
 
     canvas.onmousemove = (evt) => {
         if(pressed) {
-            const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y }, 'new': {x: evt.clientX, y: evt.clientY }}};
+            const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y }, 'new': {x: evt.clientX, y: evt.clientY }, 'color': myUser.color}};
             canvas.draw(messageBody.data);
             ws.send(JSON.stringify(messageBody));
         }
@@ -166,7 +169,7 @@ window.onload = async () => {
           ctx.lineWidth = 5;
           ctx.beginPath();
           ctx.moveTo(pos.last.x, pos.last.y)
-          ctx.strokeStyle = myUser.color ? myUser.color : red;
+          ctx.strokeStyle = pos.color;
           ctx.lineTo(pos.new.x, pos.new.y);
           ctx.stroke();
       }
