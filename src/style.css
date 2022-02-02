@@ -2,6 +2,10 @@
     user-select: none;
     font-family: 'Work Sans', sans-serif;
 }
+:root {
+    --mouse-x: 0;
+    --mouse-y: 0;
+}
 #main {
     width: 90vw;
     height: 90vh;
@@ -27,6 +31,36 @@
     z-index: 10;
     background: white;
 }
+.tools {
+    position: absolute;
+    padding-top: 1.5vw;
+    top: 500px;
+}
+.tooltip {
+    visibility: hidden;
+    position: absolute;
+    transform: translateX(var(--mouse-x)) translateY(var(--mouse-y));
+    width: 110px;
+    padding: 1.5vw;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+    background: white;
+}
+#clear {
+    padding: 1.5vw;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background: white;
+}
+#clear.guest {
+    color: rgb(71, 71, 71);
+    background-color: rgb(196, 196, 196);
+    
+}
+#clear.guest:hover {
+    cursor: not-allowed;
+}
+#clear.owner {
+    color: rgb(0, 0, 0);
+}
 .owner {
     color: rgb(255, 174, 0);
 }
@@ -50,8 +84,8 @@
 .c {
     width: 100%;
     overflow: hidden;
-    height: 2vw;
-    line-height: 2vw;
+    height: 3vw;
+    line-height: 3vw;
     float: right;
     box-sizing: border-box;
     box-shadow: 10px 0px 0px white inset;

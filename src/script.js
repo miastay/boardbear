@@ -39,16 +39,25 @@ window.onload = async () => {
 
     var userElem = document.getElementById("users");
 
+    var clear = document.getElementById("clear");
+    var errTooltip = document.getElementById("err_tooltip")
+
+    const userHasAuth = () => {
+      return myUser.auth == "owner";
+    }
+
     var sendColor = (color) => {
       ws.send(JSON.stringify({'type':'op', 'data':{'type':'usercolor', 'data':{color}}}))
     }
     var receiveColor = (color) => {
       myUser.color = color[0].color;
-      console.log(document.getElementById(myUser.id).style.setProperty('box-shadow', `10px 0px 0px ${myUser.color} inset`));
+    }
+
+    var clearCanvas = () => {
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     }
     
     var setUsers =(usersdata)=> {
-      console.log(usersdata);
       userElem.innerHTML = "";
       users = [];
       for(user of usersdata.userset) {
@@ -59,10 +68,10 @@ window.onload = async () => {
         c += (user.auth == "owner" ? " owner" : "");
         c.trim();
         users.push(user);
-        console.log(user.color)
         userElem.innerHTML += `<div id=${user.id} class="c${c}">${user.id == id ? user.id + " (me)" : (user.auth == "owner" ? user.id + " (owner)" : user.id)}</div><br>`;
         document.getElementById(user.id).style.setProperty('box-shadow', `10px 0px 0px ${user.color} inset`);
       }
+      clear.className = myUser.auth;
     }
 
     canvas.width = 1000;
@@ -97,7 +106,6 @@ window.onload = async () => {
       {
         
         data = JSON.parse(data);
-        console.log(data)
         switch(data.type) {
           case 'auth':
 
@@ -115,15 +123,12 @@ window.onload = async () => {
             break;
           case 'get':
 
-            console.log("sending canvas")
             var img = canvas.getContext('2d').getImageData(0, 0, 500, 500);
-            console.log(img)
             ws.send(JSON.stringify({'type':'canvas', 'data': { img }}));
 
             break;
           case 'users':
 
-            console.log("got users")
             setUsers(data.data);
 
             break;
@@ -132,6 +137,8 @@ window.onload = async () => {
               case 'usercolor':
                 receiveColor(data.data.data);
                 break;
+              case 'clearcanvas':
+                clearCanvas();
               default:
                 break;
             }
@@ -153,6 +160,25 @@ window.onload = async () => {
       }
     }
 
+    clear.onclick = (evt) => {
+      ws.send(JSON.stringify({'type':'op', 'data':{'type':'clearcanvas', 'data':''}}));
+    }
+    clear.onmouseenter = (evt) => {
+      if(!userHasAuth()) {
+        errTooltip.currentElem = "clear";
+        errTooltip.style.visibility = 'visible';
+      }
+    }
+    clear.onmouseleave = (evt) => {
+      if(errTooltip.currentElem = "clear") {
+        errTooltip.style.visibility = 'hidden';
+      }
+    }
+    clear.onmousemove = (evt) => {
+      document.documentElement.style.setProperty('--mouse-x', evt.offsetX + 5 + "px");
+      document.documentElement.style.setProperty('--mouse-y', evt.offsetY + 5 + "px");
+    }
+
     canvas.onmousemove = (evt) => {
         if(pressed) {
             const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y }, 'new': {x: evt.clientX, y: evt.clientY }, 'color': myUser.color}};
@@ -161,9 +187,8 @@ window.onload = async () => {
         }
         lastpos = { x: evt.offsetX, y: evt.offsetY };
     }
-    canvas.onmousedown = (evt) => { pressed = true; }
-    canvas.onmouseup = (evt) => { pressed = false; }
-    canvas.onmouseout = (evt) => { pressed = false; }
+    document.onmousedown = (evt) => { pressed = true; }
+    document.onmouseup = (evt) => { pressed = false; }
 
     canvas.draw = function(pos) {
       if (canvas.getContext) {
@@ -208,6 +233,5 @@ window.onload = async () => {
         ctx.strokeStyle = 'blue';
         ctx.lineTo(pos.new.x, pos.new.y);
         ctx.stroke();
-        console.log("drew " + pos.last.x + ", " + pos.last.y + " to " + pos.new.x + ", " + pos.new.y)
     }
   }

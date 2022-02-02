@@ -17,7 +17,7 @@ wss.on("connection", function connection(ws, req) {
     
     ws.id = wss.getUniqueID();
 
-    console.log(ws.id);
+    console.log(ws.id + " connected");
     
     if(wss.clients.size == 1) {
         ws.auth = "owner"
@@ -55,7 +55,6 @@ wss.on("connection", function connection(ws, req) {
 
     ws.on("message", (msg) => {
         var message = JSON.parse(msg);
-        console.log(ws.color)
         switch(message.type) {
             case 'draw':
                 {
@@ -77,10 +76,28 @@ wss.on("connection", function connection(ws, req) {
                 }
                 break;
             case 'op':
-                console.log(message.data)
+                switch(message.data.type) {
+                    case 'usercolor':
+                        {
+                            ws.color = message.data.data.color;
+                            reauth(ws);
+                        }
+                        break;
+                    case 'clearcanvas':
+                        {
+                            if(ws.id == wss.owner.id) {
+                                wss.image = [];
+                                [...wss.clients.keys()].forEach((client) => {
+                                    client.send(JSON.stringify({'type':'op', 'data':{'type':'clearcanvas', 'data':''}}))
+                                });
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
                 if(message.data.type == 'usercolor') {
-                    ws.color = message.data.data.color;
-                    reauth(ws);
+                   
                 }
                 break;
             default:
