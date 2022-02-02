@@ -1,5 +1,6 @@
 * {
     user-select: none;
+    font-family: 'Work Sans', sans-serif;
 }
 #main {
     width: 90vw;
@@ -19,7 +20,7 @@
     background: white;
     border-radius: 2vw;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    padding: 1vw;
+    padding: 1.5vw;
 }
 #id {
     position: absolute;
@@ -52,5 +53,7 @@
     height: 2vw;
     line-height: 2vw;
     float: right;
-    border-left: solid black 10px;
+    box-sizing: border-box;
+    box-shadow: 10px 0px 0px white inset;
+    padding-left: 1vw;
 }

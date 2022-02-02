@@ -32,7 +32,7 @@ wss.on("connection", function connection(ws, req) {
     ws.createUsers = () => {
         var userset = [];
         [...wss.clients.keys()].forEach((client) => {
-            userset.push({'id':[client.id], 'auth':[client.auth], 'color':['rgb(200, 200, 0)']})
+            userset.push({'id':[client.id], 'auth':[client.auth], 'color':[client.color ? client.color : 'rgb(200, 200, 200)']})
         });
         return userset;
     }
@@ -55,7 +55,7 @@ wss.on("connection", function connection(ws, req) {
 
     ws.on("message", (msg) => {
         var message = JSON.parse(msg);
-        console.log(message.type)
+        console.log(ws.color)
         switch(message.type) {
             case 'draw':
                 {
@@ -79,8 +79,8 @@ wss.on("connection", function connection(ws, req) {
             case 'op':
                 console.log(message.data)
                 if(message.data.type == 'usercolor') {
-                    ws.color = message.data.data;
-                    ws.send(JSON.stringify({'type': 'op', 'data': {'type': 'usercolor', 'data': [ws.color]}}));
+                    ws.color = message.data.data.color;
+                    reauth(ws);
                 }
                 break;
             default:

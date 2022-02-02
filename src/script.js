@@ -44,7 +44,7 @@ window.onload = async () => {
     }
     var receiveColor = (color) => {
       myUser.color = color[0].color;
-      document.getElementById(myUser.id).style.background = myUser.color;
+      console.log(document.getElementById(myUser.id).style.setProperty('box-shadow', `10px 0px 0px ${myUser.color} inset`));
     }
     
     var setUsers =(usersdata)=> {
@@ -59,7 +59,9 @@ window.onload = async () => {
         c += (user.auth == "owner" ? " owner" : "");
         c.trim();
         users.push(user);
-        userElem.innerHTML += `<div class="c${c}"><div id="${user.id}" class="p"></div>  ${user.id == id ? user.id + " (me)" : (user.auth == "owner" ? user.id + " (owner)" : user.id)}</div><br>`;
+        console.log(user.color)
+        userElem.innerHTML += `<div id=${user.id} class="c${c}">${user.id == id ? user.id + " (me)" : (user.auth == "owner" ? user.id + " (owner)" : user.id)}</div><br>`;
+        document.getElementById(user.id).style.setProperty('box-shadow', `10px 0px 0px ${user.color} inset`);
       }
     }
 
@@ -67,6 +69,7 @@ window.onload = async () => {
   
     ws.addEventListener("open", () => {
       console.log("connected to server");
+      sendColor(randomColor());
     });
   
     ws.addEventListener("message", ({ data }) => {
@@ -122,7 +125,6 @@ window.onload = async () => {
 
             console.log("got users")
             setUsers(data.data);
-            sendColor(randomColor())
 
             break;
           case 'op':
@@ -172,6 +174,12 @@ window.onload = async () => {
           ctx.strokeStyle = pos.color;
           ctx.lineTo(pos.new.x, pos.new.y);
           ctx.stroke();
+      }
+    }
+
+    window.onkeyup = function(evt) {
+      if(evt.code == 'Space') {
+        sendColor(randomColor());
       }
     }
 
