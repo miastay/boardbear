@@ -2,12 +2,13 @@
     user-select: none;
     font-family: 'Work Sans', sans-serif;
 }
-div {
-    border-radius: 2vw;
-}
 :root {
     --mouse-x: 0;
     --mouse-y: 0;
+    --border-round: 15px;
+}
+div {
+    border-radius: var(--border-round);
 }
 #main {
     width: 90vw;
@@ -25,7 +26,6 @@ div {
     top: 1vw;
     height: 90vh;
     background: white;
-    border-radius: 2vw;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     padding: 1.5vw;
 }
@@ -77,6 +77,9 @@ div {
 #clear.owner {
     color: rgb(0, 0, 0);
 }
+#clear.owner:hover {
+    font-weight: bold;
+}
 .owner {
     color: rgb(255, 174, 0);
 }
@@ -100,13 +103,13 @@ div {
 .c {
     width: 100%;
     overflow: hidden;
-    height: 3vw;
-    line-height: 3vw;
+    height: 35px;
+    line-height: 35px;
     float: right;
     box-sizing: border-box;
     border-radius: 0;
     box-shadow: 10px 0px 0px white inset;
-    padding-left: 1vw;
+    padding-left: 15px;
     
 }
 .c:hover .usersettings {
@@ -123,7 +126,7 @@ div {
     transition: height 0.6s ease, padding 0.6s ease, margin 0.6s ease;
 }
 .useredit.closed {
-    margin-top: 3vw;
+    margin-top: 4vw;
     height: 0vw;
     padding-top: 0;
     padding-bottom: 0;

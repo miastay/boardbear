@@ -29,7 +29,7 @@ wss.on("connection", function connection(ws, req) {
         //get(wss.owner);
     }
 
-    ws.createUsers = () => {
+    wss.createUsers = () => {
         var userset = [];
         [...wss.clients.keys()].forEach((client) => {
             userset.push({'id':[client.id], 'auth':[client.auth], 'color':[client.color ? client.color : 'rgb(200, 200, 200)']})
@@ -37,7 +37,7 @@ wss.on("connection", function connection(ws, req) {
         return userset;
     }
 
-    ws.sendUsers = (userset) => {
+    wss.sendUsers = (userset) => {
         [...wss.clients.keys()].forEach((client) => {
             client.send(JSON.stringify({'type': 'users', 'data': {userset}}), (err) => {if(err) console.log(err)});
         });
@@ -45,11 +45,26 @@ wss.on("connection", function connection(ws, req) {
 
     var reauth = (ws) => {
         ws.send(JSON.stringify({'type': 'auth', 'data': {'auth': ws.auth, 'id': ws.id}}))
-        ws.sendUsers(ws.createUsers());
+        wss.sendUsers(wss.createUsers());
         //if(ws != wss.owner) {get(wss.owner)};
     }
     
     reauth(ws)
+
+    wss.clearUserFromImage = (userid) => {
+        if(wss.image != wss.image.filter(x => x.data.id != userid)) {
+            wss.image = wss.image.filter(x => x.data.id != userid);
+            return true;
+        }
+        return false;
+    }
+    wss.sendAllCanvas = () => {
+        var img = wss.image;
+        [...wss.clients.keys()].forEach((client) => {
+            client.send(JSON.stringify({'type': 'image', 'data': { img }}), (err) => {if(err) console.log(err)});
+        });
+        
+    }
 
     //ws.binaryType = "arraybuffer";
 
@@ -93,13 +108,28 @@ wss.on("connection", function connection(ws, req) {
                             }
                         }
                         break;
+                    case 'kickuser':
+                        {
+                            console.log(message.data.data)
+                            //user id is message.data.data
+                            if(ws.id == wss.owner.id && ws.id != message.data.data.userid) {
+                                console.log("kicking " + message.data.data.userid);
+                                [...wss.clients.keys()].forEach((client) => {
+                                    if(client.id == message.data.data.userid) 
+                                    { 
+                                        if(wss.clearUserFromImage(client.id)) {
+                                            wss.sendAllCanvas();
+                                        }
+                                        client.close(); 
+                                        return; 
+                                    }
+                                });
+                            }
+                        }
+                        break;
                     default:
                         break;
                 }
-                if(message.data.type == 'usercolor') {
-                   
-                }
-                break;
             default:
                 break;
         }

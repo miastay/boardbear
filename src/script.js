@@ -43,13 +43,24 @@ window.onload = async () => {
     var errTooltip = document.getElementById("err_tooltip")
 
     var userSettingsButtons = [];
+    
+    var kickUser = (userid) => {
+      console.log(" kickiing " + (userid = userid.substring(2)));
+      ws.send(JSON.stringify({'type':'op', 'data':{'type':'kickuser', 'data':{userid}}}))
+    }
 
     var getUserEditBox =(user) => {
       var div = document.createElement("div");
       div.id = "edit" + user.id;
       div.className = "useredit closed";
-      if(user.id == myUser.id) {
-
+      if(myUser.auth == "owner") {
+        //add owner perms
+        var kickElem = document.createElement("div");
+        kickElem.className = "useredit.kick";
+        kickElem.id = "ke" + user.id;
+        kickElem.textContent = "kick"
+        kickElem.onclick = function() { kickUser($(this)[0].id) }
+        div.appendChild(kickElem);
       }
       var inner = document.createElement("span");
       inner.textContent = "this is the edit box for " + user.id;
@@ -73,8 +84,11 @@ window.onload = async () => {
     }
     var toggleUserEdit = (elem) => {
       if(elem.className === "useredit open") {
+        clearTimeout();
         elem.className = "useredit closed";
+        //setTimeout(function() {elem.style.setProperty('margin-top','0vw')}, 1000)
       } else {
+        clearTimeout();
         elem.className = "useredit open";
       }
     }
@@ -122,18 +136,7 @@ window.onload = async () => {
         try {
           data.text().then(text => {
             text = JSON.parse(text);
-            if(text.type == 'canvas') {
-              /*
-              var ctx = canvas.getContext('2d');
-              var palette = ctx.getImageData(0,0,500,500);
-              palette.data.set(new Uint8ClampedArray(text.data.img.data));
-              console.log(palette);
-              ctx.putImageData(palette, 0, 0);
-              */
-            } else
-            {
-              canvas.draw(text.data);
-            }
+            canvas.draw(text.data);
           });
         } catch(err) {
             console.log(err)
@@ -151,11 +154,10 @@ window.onload = async () => {
             
             break;
           case 'image':
-
+            clearCanvas();
             for(op of data.data.img) {
               canvas.draw(op.data);
             }
-
             break;
           case 'get':
 
@@ -217,7 +219,7 @@ window.onload = async () => {
 
     canvas.onmousemove = (evt) => {
         if(pressed) {
-            const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y }, 'new': {x: evt.clientX, y: evt.clientY }, 'color': myUser.color}};
+            const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y }, 'new': {x: evt.clientX, y: evt.clientY }, 'id': myUser.id, 'color': myUser.color}};
             canvas.draw(messageBody.data);
             ws.send(JSON.stringify(messageBody));
         }
@@ -257,17 +259,3 @@ window.onload = async () => {
     });
   }
   
-
-  ////////////
-  function draw(pos) {
-    var canvas = document.getElementById('canvas');
-    if (canvas.getContext) {
-        var ctx = canvas.getContext('2d');
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(pos.last.x, pos.last.y)
-        ctx.strokeStyle = 'blue';
-        ctx.lineTo(pos.new.x, pos.new.y);
-        ctx.stroke();
-    }
-  }
