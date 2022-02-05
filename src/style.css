@@ -7,6 +7,9 @@
     --mouse-y: 0;
     --border-round: 15px;
 }
+body {
+    overflow: hidden;
+}
 div {
     border-radius: var(--border-round);
 }
@@ -15,8 +18,6 @@ div {
     height: 90vh;
 }
 #canvas {
-    position: absolute;
-    left: 10px;
     border: solid black 1px;
 }
 #users {
@@ -28,7 +29,17 @@ div {
     background: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     padding: 1.5vw;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: solid 10px white;
+}
+#users::-webkit-scrollbar {
+    width: 8px;
+}
+#users::-webkit-scrollbar-thumb {
+    width: 8px;
+    border-radius: var(--border-round);
+    background: rgb(230, 230, 230);
 }
 #id {
     position: absolute;
@@ -37,8 +48,11 @@ div {
 }
 .tools {
     position: absolute;
-    padding-top: 1.5vw;
-    top: 500px;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 1.5vw;
+    background: rgb(200, 200, 200)
 }
 .tooltip {
     visibility: hidden;
@@ -62,7 +76,21 @@ div {
     opacity: 0.7;
 }
 
+.button {
+    padding: 0.5vw;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background: white;
+    text-align: center;
+}
+.button:hover {
+    font-weight: bold;
+} 
+.button:active {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
+}
+
 #clear {
+    width: 90px;
     padding: 1.5vw;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     background: white;
@@ -71,6 +99,9 @@ div {
     color: rgb(71, 71, 71);
     background-color: rgb(196, 196, 196);
     
+}
+#clear.owner:active {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
 }
 #clear.guest:hover {
     cursor: not-allowed;
@@ -122,7 +153,6 @@ div {
     overflow: hidden;
     box-sizing: border-box;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    height: auto;
     padding: 1vw;
     transform-origin: top;
     transition: transform 0.6s ease, padding 0.6s ease, margin 0.6s ease;
@@ -144,4 +174,10 @@ div {
     color: red;
 }
 .useredit.rename {
+}
+
+.field {
+    width: 90vw;
+    height: 85vh;
+    overflow-x: scroll;
 }

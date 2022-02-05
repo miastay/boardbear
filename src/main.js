@@ -1,23 +1,62 @@
 const WebSocket = require('ws')
+const express = require('express');
+const cors = require('cors');
+const app = express()
 const http = require('http');
-  
-const wss = new WebSocket.Server({ port: 8091 });
+bodyParser = require("body-parser");
+app.use(bodyParser());
+app.use(cors());
+app.use(express.static('/var/www/html'));
 
+const os = require('os')
+
+app.get('/', (req, res) => {
+    console.log(req.protocol)
+    const options = {
+        root: './'
+    }
+    res.sendFile('home.html', options)
+})
+app.get('/boardbear.js', (req, res) => {
+    const options = {
+        root: './'
+    }
+    res.sendFile('script.js', options)
+})
+app.get('/boardbear.css', (req, res) => {
+    const options = {
+        root: './'
+    }
+    res.sendFile('style.css', options)
+})
+app.use(function (req, res, next) {
+    res.status(x => x >= 400).redirect('/');
+})
+
+const server = http.createServer(app, (req, res) => {
+                                res.writeHead(302);
+                                res.end('hello world\n');
+                                })
+ /* 
+const wss = new WebSocket.Server({ clientTracking: false, port: 8091 });
 wss.image = [];
-wss.regids = [];
+wss.addrs = [];
 
 wss.on("connection", function connection(ws, req) {
 
-    ws.id = req.socket.remoteAddress;
+    console.log(wss.address())
 
     //if this IP is already registered, don't allow it
-    var dup = wss.regids.find(x => x == ws.id)
+    var dup = wss.addrs.find(x => x.addr == req.socket.remoteAddress)
     if(dup) {
         ws.close();
         return;
-    } else {
-        wss.regids.push(ws.id);
     }
+
+    ws.id = wss.getUniqueID();
+    ws.name = null;
+    ws.color = null;
+    wss.addrs.push({'addr': req.socket.remoteAddress, 'id': ws.id});
     
     //assign the socket auth
     if(wss.clients.size == 1) {
@@ -33,7 +72,7 @@ wss.on("connection", function connection(ws, req) {
     wss.createUsers = () => {
         var userset = [];
         [...wss.clients.keys()].forEach((client) => {
-            userset.push({'id':[client.id], 'auth':[client.auth], 'color':[client.color ? client.color : 'rgb(200, 200, 200)'], 'name':[client.name ? client.name : '']})
+            userset.push({'id':[client.id], 'auth':[client.auth], 'color':[client.color ? client.color : 'rgb(200, 200, 200)'], 'name':[client.name]})
         });
         return userset;
     }
@@ -49,7 +88,6 @@ wss.on("connection", function connection(ws, req) {
     var reauth = (ws) => {
         ws.send(JSON.stringify({'type': 'auth', 'data': {'auth': ws.auth, 'id': ws.id}}))
         wss.sendUsers(wss.createUsers());
-        console.log(wss.regids)
     }
     
     reauth(ws)
@@ -151,7 +189,7 @@ wss.on("connection", function connection(ws, req) {
   
     ws.on("close", (num) => {
         console.log("closed " + ws.id)
-        wss.regids = wss.regids.filter(x => x != ws.id)
+        wss.addrs = wss.addrs.filter(x => x.id != ws.id)
         if(ws.auth == "owner") {
             console.log("owner logoff");
             var newowner = true;
@@ -164,25 +202,13 @@ wss.on("connection", function connection(ws, req) {
         });
     });
 });
-function sfc32(a, b, c, d) {
-    return function() {
-      a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
-      var t = (a + b) | 0;
-      a = b ^ b >>> 9;
-      b = c + (c << 3) | 0;
-      c = (c << 21 | c >>> 11);
-      d = d + 1 | 0;
-      t = t + d | 0;
-      c = c + t | 0;
-      return (t >>> 0) / 4294967296;
-    }
-}
-wss.getUniqueID = function (ip) {
-    var seed = ip ^ 0xDEADBEEF;
-    var rand = sfc32(0x9E3779B9, 0x243F6A88, 0xB7E15162, seed);
-    for (var i = 0; i < 15; i++) rand();
+wss.getUniqueID = function () {
     function s4() {
-        return Math.floor((1 + rand()) * 0x10000).toString(16).substring(1);
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
     }
     return s4() + s4() + '-' + s4();
 };
+*/
+server.listen(443, function () {
+    console.log('Listening on 443');
+});

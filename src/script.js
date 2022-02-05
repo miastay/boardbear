@@ -7,7 +7,7 @@ var randomColor = () => {
 
 window.ondblclick = async () => {
     //'ws://3.84.15.164:8091/'
-    const serverAddress = 'ws://3.84.15.164:8091';
+    const serverAddress = `ws://3.84.15.164:8091`;
   
     console.log(`Connecting to ${serverAddress}`);
   
@@ -44,6 +44,7 @@ window.ondblclick = async () => {
 
     var container = document.getElementById("main");
     var canvas = document.getElementById("canvas");
+    var field = document.getElementById("scroll_field");
 
     var userElem = document.getElementById("users");
 
@@ -56,7 +57,8 @@ window.ondblclick = async () => {
       console.log(" kickiing " + (userid = userid.substring(2)));
       ws.send(JSON.stringify({'type':'op', 'data':{'type':'kickuser', 'data':{userid}}}))
     }
-    var renameUser = (ruserid, rname) => {
+    var renameUser = (ruserid) => {
+      var rname = window.prompt("Enter your name");
       ruserid = ruserid.substring(2)
       ws.send(JSON.stringify({'type':'op', 'data':{'type':'nameuser', 'data':{ruserid, rname}}}))
     }
@@ -71,11 +73,14 @@ window.ondblclick = async () => {
     }
     var getRenameElem = (id) => {
       var renameElem = document.createElement("div");
-      renameElem.className = "useredit rename";
+      renameElem.className = "button";
       renameElem.id = "rn" + id;
       renameElem.textContent = "rename"
-      renameElem.onclick = function() { renameUser($(this)[0].id, "jahksbdf") }
+      renameElem.onclick = function() { renameUser($(this)[0].id) }
       return renameElem
+    }
+    var getCanvasOffset = () => {
+        return {'x': field.scrollWidth, 'y': field.scrollHeight}
     }
 
     var getUserEditBox =(user) => {
@@ -160,7 +165,7 @@ window.ondblclick = async () => {
       clear.className = myUser.auth;
     }
 
-    canvas.width = 1000;
+    canvas.width = 5000;
   
     ws.addEventListener("open", () => {
       console.log("connected to server");
@@ -226,17 +231,6 @@ window.ondblclick = async () => {
       }
     });
 
-    var drawBlob =(data)=> {
-      try {
-        data.text().then(text => {
-          text = JSON.parse(text);
-          canvas.draw(text.data);
-        });
-      } catch(err) {
-          console.log(err)
-      }
-    }
-
     clear.onclick = (evt) => {
       ws.send(JSON.stringify({'type':'op', 'data':{'type':'clearcanvas', 'data':''}}));
     }
@@ -258,11 +252,11 @@ window.ondblclick = async () => {
 
     canvas.onmousemove = (evt) => {
         if(pressed) {
-            const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y }, 'new': {x: evt.clientX, y: evt.clientY }, 'id': myUser.id, 'color': myUser.color}};
+            const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y}, 'new': {x: evt.clientX + field.scrollLeft , y: evt.clientY + field.scrollTop }, 'id': myUser.id, 'color': myUser.color}};
             canvas.draw(messageBody.data);
             ws.send(JSON.stringify(messageBody));
         }
-        lastpos = { x: evt.offsetX, y: evt.offsetY };
+        lastpos = {x: evt.clientX + field.scrollLeft , y: evt.clientY + field.scrollTop};
     }
     document.onmousedown = (evt) => { pressed = true; }
     document.onmouseup = (evt) => { pressed = false; }
@@ -272,7 +266,7 @@ window.ondblclick = async () => {
           var ctx = canvas.getContext('2d');
           ctx.lineWidth = 5;
           ctx.beginPath();
-          ctx.moveTo(pos.last.x, pos.last.y)
+          ctx.moveTo(pos.last.x, pos.last.y )
           ctx.strokeStyle = pos.color;
           ctx.lineTo(pos.new.x, pos.new.y);
           ctx.stroke();
@@ -292,7 +286,7 @@ window.ondblclick = async () => {
     return new Promise((resolve) => {
       ws.addEventListener("close", () => {
         console.log("Connection lost with server.");
-        window.open("http://3.84.15.164:8081", '_self');
+        window.open(window.location.href, '_self');
         resolve();
       });
     });

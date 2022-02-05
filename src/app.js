@@ -9,6 +9,10 @@ app.use(express.static('res'))
 const os = require('os')
 
 app.get('/', (req, res) => {
+    if(req.header('x-forwarded-proto') == 'https') {
+        res.redirect("http://boardbear.ryantaylor.link");
+        return;
+    }
     const options = {
         root: './'
     }
@@ -26,8 +30,11 @@ app.get('/boardbear.css', (req, res) => {
     }
     res.sendFile('style.css', options)
 })
+app.get('/bb', (req, res) => {
+    res.json({'new':'msg'})
+})
 app.listen(8081)
-
+/*
 app.use(function (req, res, next) {
     res.status(x => x >= 400).redirect('/');
-})
+})*/
