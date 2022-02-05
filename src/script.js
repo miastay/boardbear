@@ -5,8 +5,9 @@ var randomColor = () => {
   //return 'hsl(' + Number.parseInt(Math.random()*360) + ', ' + Number.parseInt((Math.random()*40) + 60) + ', ' + Number.parseInt((Math.random()*40) + 60) + ')';
 }
 
-window.onload = async () => {
-    const serverAddress = 'ws://3.84.15.164:8091/';
+window.ondblclick = async () => {
+    //'ws://3.84.15.164:8091/'
+    const serverAddress = 'ws://3.84.15.164:8091';
   
     console.log(`Connecting to ${serverAddress}`);
   
@@ -28,11 +29,18 @@ window.onload = async () => {
   var pressed = false;
   var lastpos = {x: 0, y: 0}
   var id;
-  var myUser = {'id': 0, 'auth': 0, 'color': 'rgb(0, 0, 0)'};
+  var myUser = {'id': 0, 'auth': 0, 'color': 'rgb(0, 0, 0)', 'name': ''};
   var users = []
   
+  ///////
+ ///////
+
   async function runSession(address) {
-    const ws = new WebSocket(address);
+    var ws;
+    try {
+      ws = new WebSocket(address);
+    } catch (err) { console.log(err) }
+    
 
     var container = document.getElementById("main");
     var canvas = document.getElementById("canvas");
@@ -48,23 +56,43 @@ window.onload = async () => {
       console.log(" kickiing " + (userid = userid.substring(2)));
       ws.send(JSON.stringify({'type':'op', 'data':{'type':'kickuser', 'data':{userid}}}))
     }
+    var renameUser = (ruserid, rname) => {
+      ruserid = ruserid.substring(2)
+      ws.send(JSON.stringify({'type':'op', 'data':{'type':'nameuser', 'data':{ruserid, rname}}}))
+    }
+
+    var getKickElem = (id) => {
+      var kickElem = document.createElement("div");
+      kickElem.className = "useredit kick";
+      kickElem.id = "ke" + id;
+      kickElem.textContent = "kick"
+      kickElem.onclick = function() { kickUser($(this)[0].id) }
+      return kickElem
+    }
+    var getRenameElem = (id) => {
+      var renameElem = document.createElement("div");
+      renameElem.className = "useredit rename";
+      renameElem.id = "rn" + id;
+      renameElem.textContent = "rename"
+      renameElem.onclick = function() { renameUser($(this)[0].id, "jahksbdf") }
+      return renameElem
+    }
 
     var getUserEditBox =(user) => {
       var div = document.createElement("div");
       div.id = "edit" + user.id;
       div.className = "useredit closed";
+
+      //add owner perms
       if(myUser.auth == "owner") {
-        //add owner perms
-        var kickElem = document.createElement("div");
-        kickElem.className = "useredit.kick";
-        kickElem.id = "ke" + user.id;
-        kickElem.textContent = "kick"
-        kickElem.onclick = function() { kickUser($(this)[0].id) }
-        div.appendChild(kickElem);
+        //add non-self perms
+        if(myUser.id != user.id) {
+          //kick elem
+          div.appendChild(getKickElem(user.id));
+        }
+        //name elem
+        div.appendChild(getRenameElem(user.id));
       }
-      var inner = document.createElement("span");
-      inner.textContent = "this is the edit box for " + user.id;
-      div.appendChild(inner);
       return div;
     }
 
@@ -78,8 +106,15 @@ window.onload = async () => {
     var receiveColor = (color) => {
       myUser.color = color[0].color;
     }
+    ///
+
+    var receiveName = (name) => {
+      myUser.name = name;
+    }
+
 
     var clearCanvas = () => {
+      console.log("clearingcanvas")
       canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     }
     var toggleUserEdit = (elem) => {
@@ -108,7 +143,8 @@ window.onload = async () => {
         var div = document.createElement("div");
         div.className = `c${c}`;
         div.id = user.id;
-        div.textContent = (user.id == id ? user.id + " (me)" : (user.auth == "owner" ? user.id + " (owner)" : user.id));
+        var name = (user.name != "" ? user.name : user.id);
+        div.textContent = (user.id == id ? name + " (me)" : (user.auth == "owner" ? name + " (owner)" : name));
         
         var userSettings = document.createElement("img");
         userSettings.id = user.id;
@@ -174,6 +210,9 @@ window.onload = async () => {
             switch(data.data.type) {
               case 'usercolor':
                 receiveColor(data.data.data);
+                break;
+              case 'username':
+                receiveName(data.data.data);
                 break;
               case 'clearcanvas':
                 clearCanvas();
@@ -253,7 +292,7 @@ window.onload = async () => {
     return new Promise((resolve) => {
       ws.addEventListener("close", () => {
         console.log("Connection lost with server.");
-        window.open('/', '_self')
+        window.open("http://3.84.15.164:8081", '_self');
         resolve();
       });
     });
