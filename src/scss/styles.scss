@@ -1,6 +1,14 @@
 * {
     user-select: none;
     font-family: 'Work Sans', sans-serif;
+    @media (prefers-color-scheme: light) {
+        background-color: white;
+        color: black;
+    }
+    @media (prefers-color-scheme: dark) {
+        background-color: black;
+        color: white;
+    }
 }
 :root {
     --mouse-x: 0;
@@ -27,7 +35,7 @@ div {
     right: 1vw;
     top: 1vw;
     height: 90vh;
-    background: white;
+    background: inherit;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     padding: 1.5vw;
     overflow-y: auto;
@@ -176,21 +184,19 @@ div {
     z-index: 100;
     top: 0;
     left: 0;
-    background: url("bear-pattern.png");
-    background-size: 35%;
-    background-position: var(--bg-offset) var(--bg-offset);
-    filter: brightness(2);
-    transition: filter 0.5s ease;
-}
-@media (prefers-color-scheme: light) {
-    #pop {
+    @media (prefers-color-scheme: light) {
         background: url("bear-pattern.png") white;
+        background-size: 35%;
+        background-position: var(--bg-offset) var(--bg-offset);
+        filter: brightness(1);
     }
-}
-@media (prefers-color-scheme: dark) {
-    #pop {
+    @media (prefers-color-scheme: dark) {
         background: url("bear-pattern.png") black;
+        background-size: 35%;
+        background-position: var(--bg-offset) var(--bg-offset);
+        filter: brightness(2);
     }
+    transition: filter 0.5s ease;
 }
 
 #landing {

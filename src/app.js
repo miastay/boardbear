@@ -7,6 +7,7 @@ app.use(cors());
 const path = require('path')
 app.use(express.static('./func'));//, express.static(path.join(__dirname, 'func')))
 app.use(express.static('./img'));
+app.use(express.static('./style'));
 
 const os = require('os')
 

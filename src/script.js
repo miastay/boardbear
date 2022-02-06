@@ -11,6 +11,12 @@ function wsend(msg) {
 }
 
 function getCookie(index) {return document.cookie.split(';').length < index ? "" : document.cookie.split(';')[index].trim()}
+function findCookie(regex) {
+  for(cookie of document.cookie.split(';')) {
+    if(cookie.search(regex)) { return cookie; }
+  }
+  return false;
+}
 
 
 var ws;
@@ -34,15 +40,14 @@ window.onload = () => {
   });
   var bgoffset = 0;
 
-  if(getCookie(1).search(/bb[0-9]{1,4}$/) == -1) {
+  if(!findCookie(/bb[0-9]{1,4}$/)) {
     //new cookie!!!
     document.cookie = "bb0"; 
   } else {
-    bgoffset = Number.parseInt(getCookie(1).substring(2));
+    bgoffset = Number.parseInt(findCookie(/bb[0-9]{1,4}$/).substring(2));
     document.getElementById("pop").style.filter = "brightness(1)";
   }
 
-  console.log(document.cookie.split(';'));
   function movebg() { document.documentElement.style.setProperty('--bg-offset', ((++bgoffset)/5.0) + "px"); window.requestAnimationFrame(movebg) }
   window.requestAnimationFrame(movebg)
   window.onbeforeunload = () => {

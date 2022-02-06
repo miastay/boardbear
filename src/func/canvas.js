@@ -22,10 +22,10 @@ canvas.onmousemove = (evt) => {
 document.onmousedown = (evt) => { pressed = true; console.log(field) }
 document.onmouseup = (evt) => { pressed = false; }
 window.addEventListener('keydown', function(e) {
-    if(e.key == "Space" && e.target == document.body) {
-      e.preventDefault();
+    if(e.key == " ") {
+        e.preventDefault();
     }
-  });
+});
 
 canvas.draw = function(pos) {
   if (canvas.getContext) {
