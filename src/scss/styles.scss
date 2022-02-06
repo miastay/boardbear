@@ -1,0 +1,205 @@
+* {
+    user-select: none;
+    font-family: 'Work Sans', sans-serif;
+}
+:root {
+    --mouse-x: 0;
+    --mouse-y: 0;
+    --border-round: 15px;
+    --bg-offset: 0;
+}
+body {
+    overflow: hidden;
+}
+div {
+    border-radius: var(--border-round);
+}
+#main {
+    width: 90vw;
+    height: 90vh;
+}
+#canvas {
+    border: solid black 1px;
+}
+#users {
+    width: 300px;
+    position: absolute;
+    right: 1vw;
+    top: 1vw;
+    height: 90vh;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 1.5vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: solid 10px white;
+}
+#users::-webkit-scrollbar {
+    width: 8px;
+}
+#users::-webkit-scrollbar-thumb {
+    width: 8px;
+    border-radius: var(--border-round);
+    background: rgb(230, 230, 230);
+}
+#id {
+    position: absolute;
+    z-index: 10;
+    background: white;
+}
+.tools {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 1.5vw;
+}
+.tooltip {
+    visibility: hidden;
+    position: absolute;
+    transform: translateX(var(--mouse-x)) translateY(calc(var(--mouse-y) - 100px));
+    width: 110px;
+    padding: 1.5vw;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+    background: white;
+}
+.usersettings {
+    position: absolute;
+    padding: 1vw;
+    padding-top: 0.6vw;
+    transform: scale(0) rotate(180deg);
+    opacity: 0.5;
+    transition: transform 0.2s linear, opacity 0.4s ease;
+    right: 1vw;
+} 
+.usersettings:hover {
+    opacity: 0.7;
+}
+
+.button {
+    padding: 0.5vw;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background: white;
+    text-align: center;
+}
+.button.disabled {
+    color: rgb(71, 71, 71);
+    background-color: rgb(196, 196, 196);
+}
+.button.disabled:hover {
+    cursor: not-allowed;
+}
+.button.enabled:hover {
+    font-weight: bold;
+} 
+.button.enabled:active {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
+}
+#clear {
+    width: 90px;
+    padding: 1.5vw;
+}
+.owner {
+    color: rgb(255, 174, 0);
+}
+.guest {
+    color: gray;
+}
+.me {
+    color: turquoise;
+}
+.me.owner {
+    color: rgb(255, 174, 0);
+}
+.p {
+    display: inline-block;
+    width: 20px;
+    height: 100%;
+    line-height: 2vw;
+    background: white;
+    transition: background-color 1s ease;
+}
+.c {
+    width: 100%;
+    overflow: hidden;
+    height: 35px;
+    line-height: 35px;
+    float: right;
+    box-sizing: border-box;
+    border-radius: 0;
+    box-shadow: 10px 0px 0px white inset;
+    padding-left: 15px;
+    
+}
+.c:hover .usersettings {
+    transform: scale(1) rotate(0deg);
+}
+
+.useredit {
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 1vw;
+    transform-origin: top;
+    transition: transform 0.6s ease, padding 0.6s ease, margin 0.6s ease;
+    text-align: center;
+}
+.useredit.closed {
+    margin-top: 4vw;
+    transform: scaleY(0);
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.useredit.open {
+    margin-top: 4vw;
+    transform: scaleY(1);
+    padding-top: 1vw;
+    padding-bottom: 1vw;
+}
+.useredit.kick {
+    color: red;
+}
+.useredit.rename {
+}
+
+.field {
+    width: 90vw;
+    height: 85vh;
+    overflow-x: scroll;
+}
+
+#pop {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    background: url("bear-pattern.png");
+    background-size: 35%;
+    background-position: var(--bg-offset) var(--bg-offset);
+    filter: brightness(2);
+    transition: filter 0.5s ease;
+}
+@media (prefers-color-scheme: light) {
+    #pop {
+        background: url("bear-pattern.png") white;
+    }
+}
+@media (prefers-color-scheme: dark) {
+    #pop {
+        background: url("bear-pattern.png") black;
+    }
+}
+
+#landing {
+    padding: 1vw;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background: white;
+    text-align: center;
+    width: 30vw;
+    height: 50vh;
+    margin-left: 35vw;
+    margin-top: 20vh;
+}

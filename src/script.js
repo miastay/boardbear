@@ -1,8 +1,67 @@
-canvases = [];
 
 var randomColor = () => {
   return 'rgb(' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ')';
   //return 'hsl(' + Number.parseInt(Math.random()*360) + ', ' + Number.parseInt((Math.random()*40) + 60) + ', ' + Number.parseInt((Math.random()*40) + 60) + ')';
+}
+
+function wsend(msg) {
+  if(ws && ws.readyState == 1) {
+    ws.send(msg);
+  }
+}
+
+function getCookie(index) {return document.cookie.split(';').length < index ? "" : document.cookie.split(';')[index].trim()}
+
+
+var ws;
+var container;
+var field;
+var clear;
+var errTooltip;
+
+
+window.onload = () => {
+  container = document.getElementById("main");
+  field = document.getElementById("scroll_field");
+  $("#users")[0] = document.getElementById("users");
+  clear = document.getElementById("clear");
+  errTooltip = document.getElementById("err_tooltip")
+  $.getScript("canvas.js", function() {
+    console.log("loaded canvas.js")
+  });
+  $.getScript("user.js", function() {
+    console.log("loaded user.js")
+  });
+  var bgoffset = 0;
+
+  if(getCookie(1).search(/bb[0-9]{1,4}$/) == -1) {
+    //new cookie!!!
+    document.cookie = "bb0"; 
+  } else {
+    bgoffset = Number.parseInt(getCookie(1).substring(2));
+    document.getElementById("pop").style.filter = "brightness(1)";
+  }
+
+  console.log(document.cookie.split(';'));
+  function movebg() { document.documentElement.style.setProperty('--bg-offset', ((++bgoffset)/5.0) + "px"); window.requestAnimationFrame(movebg) }
+  window.requestAnimationFrame(movebg)
+  window.onbeforeunload = () => {
+    document.cookie = "bb" + (bgoffset);
+  }
+
+}
+
+
+window.onkeyup = (evt) => {
+  if(evt.key == " ") {
+    console.log("delkete")
+    document.getElementById("pop").remove();
+  }
+  if(evt.key == "a") {
+    console.log(getCookie(1))
+    document.cookie = "bb" + (Number.parseInt(getCookie(1).substring(2)) + bgoffset);
+    console.log(document.cookie)
+  }
 }
 
 window.ondblclick = async () => {
@@ -22,151 +81,25 @@ window.ondblclick = async () => {
   
       console.log("Reached maximum retries, giving up.");
     } catch (e) {
-      console.log(e.message || e);
+      console.log(e);
     }
   };
 
-  var pressed = false;
-  var lastpos = {x: 0, y: 0}
-  var id;
-  var myUser = {'id': 0, 'auth': 0, 'color': 'rgb(0, 0, 0)', 'name': ''};
-  var users = []
-  
+var pressed = false;
+var lastpos = {x: 0, y: 0}
+var id;
+var myUser = {'id': 0, 'auth': 0, 'color': 'rgb(0, 0, 0)', 'name': ''};
+var users = []
+
   ///////
  ///////
 
   async function runSession(address) {
-    var ws;
+
     try {
       ws = new WebSocket(address);
     } catch (err) { console.log(err) }
-    
 
-    var container = document.getElementById("main");
-    var canvas = document.getElementById("canvas");
-    var field = document.getElementById("scroll_field");
-
-    var userElem = document.getElementById("users");
-
-    var clear = document.getElementById("clear");
-    var errTooltip = document.getElementById("err_tooltip")
-
-    var userSettingsButtons = [];
-    
-    var kickUser = (userid) => {
-      console.log(" kickiing " + (userid = userid.substring(2)));
-      ws.send(JSON.stringify({'type':'op', 'data':{'type':'kickuser', 'data':{userid}}}))
-    }
-    var renameUser = (ruserid) => {
-      var rname = window.prompt("Enter your name");
-      ruserid = ruserid.substring(2)
-      ws.send(JSON.stringify({'type':'op', 'data':{'type':'nameuser', 'data':{ruserid, rname}}}))
-    }
-
-    var getKickElem = (id) => {
-      var kickElem = document.createElement("div");
-      kickElem.className = "useredit kick";
-      kickElem.id = "ke" + id;
-      kickElem.textContent = "kick"
-      kickElem.onclick = function() { kickUser($(this)[0].id) }
-      return kickElem
-    }
-    var getRenameElem = (id) => {
-      var renameElem = document.createElement("div");
-      renameElem.className = "button";
-      renameElem.id = "rn" + id;
-      renameElem.textContent = "rename"
-      renameElem.onclick = function() { renameUser($(this)[0].id) }
-      return renameElem
-    }
-    var getCanvasOffset = () => {
-        return {'x': field.scrollWidth, 'y': field.scrollHeight}
-    }
-
-    var getUserEditBox =(user) => {
-      var div = document.createElement("div");
-      div.id = "edit" + user.id;
-      div.className = "useredit closed";
-
-      //add owner perms
-      if(myUser.auth == "owner") {
-        //add non-self perms
-        if(myUser.id != user.id) {
-          //kick elem
-          div.appendChild(getKickElem(user.id));
-        }
-        //name elem
-        div.appendChild(getRenameElem(user.id));
-      }
-      return div;
-    }
-
-    const userHasAuth = () => {
-      return myUser.auth == "owner";
-    }
-
-    var sendColor = (color) => {
-      ws.send(JSON.stringify({'type':'op', 'data':{'type':'usercolor', 'data':{color}}}))
-    }
-    var receiveColor = (color) => {
-      myUser.color = color[0].color;
-    }
-    ///
-
-    var receiveName = (name) => {
-      myUser.name = name;
-    }
-
-
-    var clearCanvas = () => {
-      console.log("clearingcanvas")
-      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-    }
-    var toggleUserEdit = (elem) => {
-      if(elem.className === "useredit open") {
-        clearTimeout();
-        elem.className = "useredit closed";
-        //setTimeout(function() {elem.style.setProperty('margin-top','0vw')}, 1000)
-      } else {
-        clearTimeout();
-        elem.className = "useredit open";
-      }
-    }
-    
-    var setUsers =(usersdata)=> {
-      userElem.innerHTML = "";
-      users = [];
-      for(user of usersdata.userset) {
-        if(user.id == id) { myUser = user; }
-        var c = "";
-        c += (user.auth == "guest" ? " guest" : "");
-        c += (user.id == id ? " me" : "");
-        c += (user.auth == "owner" ? " owner" : "");
-        c.trim();
-        users.push(user);
-
-        var div = document.createElement("div");
-        div.className = `c${c}`;
-        div.id = user.id;
-        var name = (user.name != "" ? user.name : user.id);
-        div.textContent = (user.id == id ? name + " (me)" : (user.auth == "owner" ? name + " (owner)" : name));
-        
-        var userSettings = document.createElement("img");
-        userSettings.id = user.id;
-        userSettings.className = "usersettings";
-        userSettings.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAABcUlEQVRIia2WvU7DMBSFv9KWofAC0Lmq+Bk6MSGViQ4gGCjPhECgvhAKkAJSgLLwGmyNMhTSMuQGnMg/acKRrpTY95xzbceOaxTHKrAmzyHwtQS3EN6BhcT4v8WbwEwxiIB6WbEeEAADpW1bEU+jo/QPhNMrIv4pAnNgBJyRTEne4A44BW4kdyFcq4mvEVo2HmwG+8B3BfEYOLAZAFxVMLjIizU0Bq8G4xB4kec9YF2T82irvAnsAs+aynxgQ8ndRL/wHrAlWplRTMh+52pMc+KqSWjgzIA30aZlSErj1jJqz8FtrVjIKWol+37RIFmcyFDFlGQ68mhjnqKIZI0yH1Ed6AJPGsI4Z9KWonSL3MFxTp0bqgpFwLNUfmwTTjEykIvEtUv8kL+Dq0zMgSObQVBBPI3AZqAe1zFwCQzR79p74ERyYmlzHtepiQ/0lbYdjUFX6e8LxyluQulfZpGdDMkN4kN5n5BMixOFtrqg1LXlB2vw9K/XiPbzAAAAAElFTkSuQmCC"
-        userSettings.onclick = function() { toggleUserEdit(document.getElementById("edit"+($(this)[0].id))) }
-        div.appendChild(userSettings);
-        userElem.appendChild(div);
-        userElem.appendChild(getUserEditBox(users.find(x => x.id == userSettings.id)));
-        userElem.appendChild(document.createElement("br"));
-        document.getElementById(user.id).style.setProperty('box-shadow', `10px 0px 0px ${user.color} inset`);
-      }
-      clear.className = myUser.auth;
-    }
-
-    canvas.width = 5000;
-  
     ws.addEventListener("open", () => {
       console.log("connected to server");
       sendColor(randomColor());
@@ -174,6 +107,7 @@ window.ondblclick = async () => {
   
     ws.addEventListener("message", ({ data }) => {
       if(data instanceof Blob) {
+        console.log("blob")
         try {
           data.text().then(text => {
             text = JSON.parse(text);
@@ -184,7 +118,6 @@ window.ondblclick = async () => {
         }
       } else 
       {
-        
         data = JSON.parse(data);
         switch(data.type) {
           case 'auth':
@@ -195,15 +128,19 @@ window.ondblclick = async () => {
             
             break;
           case 'image':
-            clearCanvas();
-            for(op of data.data.img) {
-              canvas.draw(op.data);
-            }
+
+            canvas.clearCanvas();
+            canvas.drawMany(data.data.img)
+
+            break;
+          case 'draw':
+
+            console.log(data)
+
             break;
           case 'get':
 
-            var img = canvas.getContext('2d').getImageData(0, 0, 500, 500);
-            ws.send(JSON.stringify({'type':'canvas', 'data': { img }}));
+            canvas.sendCanvas();
 
             break;
           case 'users':
@@ -220,7 +157,7 @@ window.ondblclick = async () => {
                 receiveName(data.data.data);
                 break;
               case 'clearcanvas':
-                clearCanvas();
+                canvas.clearCanvas();
               default:
                 break;
             }
@@ -250,28 +187,6 @@ window.ondblclick = async () => {
       document.documentElement.style.setProperty('--mouse-y', evt.offsetY + 5 + "px");
     }
 
-    canvas.onmousemove = (evt) => {
-        if(pressed) {
-            const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y}, 'new': {x: evt.clientX + field.scrollLeft , y: evt.clientY + field.scrollTop }, 'id': myUser.id, 'color': myUser.color}};
-            canvas.draw(messageBody.data);
-            ws.send(JSON.stringify(messageBody));
-        }
-        lastpos = {x: evt.clientX + field.scrollLeft , y: evt.clientY + field.scrollTop};
-    }
-    document.onmousedown = (evt) => { pressed = true; }
-    document.onmouseup = (evt) => { pressed = false; }
-
-    canvas.draw = function(pos) {
-      if (canvas.getContext) {
-          var ctx = canvas.getContext('2d');
-          ctx.lineWidth = 5;
-          ctx.beginPath();
-          ctx.moveTo(pos.last.x, pos.last.y )
-          ctx.strokeStyle = pos.color;
-          ctx.lineTo(pos.new.x, pos.new.y);
-          ctx.stroke();
-      }
-    }
 
     window.onkeyup = function(evt) {
       if(evt.code == 'Space') {

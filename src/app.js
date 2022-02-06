@@ -4,7 +4,9 @@ const app = express()
 bodyParser = require("body-parser");
 app.use(bodyParser());
 app.use(cors());
-app.use(express.static('res'))
+const path = require('path')
+app.use(express.static('./func'));//, express.static(path.join(__dirname, 'func')))
+app.use(express.static('./img'));
 
 const os = require('os')
 

@@ -78,7 +78,7 @@ wss.on("connection", function connection(ws, req) {
                     wss.image.push(message);
                     [...wss.clients.keys()].forEach((client) => {
                         if(ws.id != client.id) {
-                            client.send(msg, (err) => {if(err) console.log(err)});
+                            client.send(JSON.stringify({'type': 'draw', 'data': [message.data]}), (err) => {if(err) console.log(err)});
                         }
                     });
                 }
