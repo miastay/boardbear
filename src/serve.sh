@@ -1,2 +1,1 @@
-sass ./scss:./style
-node app.js
+sass --watch ./scss:./style

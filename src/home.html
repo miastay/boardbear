@@ -13,9 +13,22 @@
         <title>boardbear!</title>
         <span id="id"></span>
         <div id="main">
-            <div id="pop"><div id="landing">a</div></div>
+            <div id="pop" class="pop">
+                <div id="landing">
+                    <div id="logo"><img src="logo-500.png"/></div>
+                    <div id="join_button" class="item button enabled" onclick='$("#pop").remove(); socketStart()'>join a board</div>
+                    <div id="create_button" class="item button enabled">create a board</div>
+                </div>
+            </div>
             <div id="scroll_field" class="field"><canvas id="canvas" width="500" height="500"></canvas></div>
-            <div class="tools"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div><div id="clear" class="button">clear</div></div>
+            <div class="tools"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>
+                <div id="clear" class="button">clear</div>
+                <input id="urlin" type="text" placeholder="enter a url bg..." onchange="canvas.loadImg($(this)[0].value)"/>
+                <form action="/pdf" method="post" enctype="multipart/form-data">
+                    <input type="file" name="ffupload"/>
+                    <input type="submit">
+                </form>
+            </div>
         </div>
         <div id="users">
         </div>

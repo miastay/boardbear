@@ -1,20 +1,36 @@
+@mixin theme($theme: black) {
+    background-color: $theme !important;
+    color: black !important;
+}
+@mixin theme($theme: white) {
+    background-color: $theme !important;
+    color: white !important;
+}
+
+
 * {
+    
     user-select: none;
     font-family: 'Work Sans', sans-serif;
+/*
     @media (prefers-color-scheme: light) {
-        background-color: white;
-        color: black;
+        @include theme($theme: white)
     }
     @media (prefers-color-scheme: dark) {
-        background-color: black;
-        color: white;
+        @include theme($theme: white)
     }
+  */  
+
+    box-sizing: border-box;
+    //border: solid 1px red;
+
+    $tick: 0;
+
 }
 :root {
     --mouse-x: 0;
     --mouse-y: 0;
     --border-round: 15px;
-    --bg-offset: 0;
 }
 body {
     overflow: hidden;
@@ -27,7 +43,12 @@ div {
     height: 90vh;
 }
 #canvas {
-    border: solid black 1px;
+    $canvas-scale: 1;
+    transform-origin: center;
+    background: url("") white no-repeat;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    //background-size: cover;
+    background-attachment: local;
 }
 #users {
     width: 300px;
@@ -35,7 +56,7 @@ div {
     right: 1vw;
     top: 1vw;
     height: 90vh;
-    background: inherit;
+    background: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     padding: 1.5vw;
     overflow-y: auto;
@@ -83,12 +104,28 @@ div {
 .usersettings:hover {
     opacity: 0.7;
 }
-
+@keyframes glowbounce {
+    from {
+        box-shadow: 0 0 20px rgba(92, 135, 205, 0.3);
+    }
+    to {
+        box-shadow: 0 0 20px rgba(92, 135, 205, 0.9);
+    }
+}
 .button {
-    padding: 0.5vw;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 1.5vw;
     background: white;
     text-align: center;
+    transition: box-shadow 1s ease;
+    //animation: glowbounce 1s ease infinite alternate;
+    //mix-blend-mode: lighten
+}
+.button.item:hover {
+    box-shadow: 0 0 30px rgba(92, 135, 205, 0.8);
+}
+.button.enabled:active {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
 }
 .button.disabled {
     color: rgb(71, 71, 71);
@@ -96,12 +133,6 @@ div {
 }
 .button.disabled:hover {
     cursor: not-allowed;
-}
-.button.enabled:hover {
-    font-weight: bold;
-} 
-.button.enabled:active {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2) inset;
 }
 #clear {
     width: 90px;
@@ -174,38 +205,75 @@ div {
 .field {
     width: 90vw;
     height: 85vh;
-    overflow-x: scroll;
+    //overflow-x: scroll;
+    overflow: hidden;
+    border: solid black 1px;
+    background:rgb(71, 71, 71);
 }
 
-#pop {
+.pop {
     width: 100%;
     height: 100%;
     position: absolute;
+    border-radius: 0;
+    box-shadow: 0px 0px 1000px rgba(0, 0, 0, 0.8) inset;
     z-index: 100;
     top: 0;
     left: 0;
     @media (prefers-color-scheme: light) {
         background: url("bear-pattern.png") white;
-        background-size: 35%;
-        background-position: var(--bg-offset) var(--bg-offset);
-        filter: brightness(1);
+        background-size: 400px 400px;
+        
+        //background-position: var(--bg-offset) var(--bg-offset);
     }
     @media (prefers-color-scheme: dark) {
         background: url("bear-pattern.png") black;
-        background-size: 35%;
-        background-position: var(--bg-offset) var(--bg-offset);
-        filter: brightness(2);
+        background-size: 400px 400px;
+        //background-position: var(--bg-offset) var(--bg-offset);
     }
-    transition: filter 0.5s ease;
+    animation: animbg 20s ease-in-out infinite alternate, loadfade 1s cubic-bezier(1,0,.63,.53) 1;
+    @keyframes animbg {
+        0% {
+            background-position: 0px 0px;
+        }
+        50% {
+            background-position: 400px 200px;
+        }
+        100% {
+            background-position: 0px 400px;
+        }
+    }
+    @keyframes loadfade {
+        from {
+            filter: brightness(0)
+        }
+        to {
+            filter: brightness(1)
+        }
+    }
 }
 
 #landing {
     padding: 1vw;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    background: white;
+    background: rgba(255, 255, 255, 1);
     text-align: center;
     width: 30vw;
     height: 50vh;
     margin-left: 35vw;
     margin-top: 20vh;
+    filter: none;
+    #logo {
+        margin-bottom: 15%;
+        padding-top: 5%;
+        img {
+            width: 90%;
+        }
+    }
+    .item {
+        margin-bottom: 5%;
+        width: 100%;
+        padding: 1vw;
+    }
 }
+

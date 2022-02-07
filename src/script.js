@@ -1,4 +1,3 @@
-
 var randomColor = () => {
   return 'rgb(' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ')';
   //return 'hsl(' + Number.parseInt(Math.random()*360) + ', ' + Number.parseInt((Math.random()*40) + 60) + ', ' + Number.parseInt((Math.random()*40) + 60) + ')';
@@ -16,6 +15,19 @@ function findCookie(regex) {
     if(cookie.search(regex)) { return cookie; }
   }
   return false;
+}
+
+function advJSONParse(jstr) {
+  var json = JSON.parse(jstr);
+  getLeaf(json);
+  function getLeaf(j) {
+    if(typeof j == 'string') { return j; }
+    for (var key of Object.keys(j)) {
+      if(typeof j[key] === 'object' && j[key].length == 1) { j[key] = j[key][0] }
+      getLeaf(j[key]);
+    }
+  }
+  return json;
 }
 
 
@@ -38,38 +50,14 @@ window.onload = () => {
   $.getScript("user.js", function() {
     console.log("loaded user.js")
   });
-  var bgoffset = 0;
 
-  if(!findCookie(/bb[0-9]{1,4}$/)) {
-    //new cookie!!!
-    document.cookie = "bb0"; 
-  } else {
-    bgoffset = Number.parseInt(findCookie(/bb[0-9]{1,4}$/).substring(2));
-    document.getElementById("pop").style.filter = "brightness(1)";
-  }
-
-  function movebg() { document.documentElement.style.setProperty('--bg-offset', ((++bgoffset)/5.0) + "px"); window.requestAnimationFrame(movebg) }
-  window.requestAnimationFrame(movebg)
   window.onbeforeunload = () => {
-    document.cookie = "bb" + (bgoffset);
+    //updates go here before reload
   }
 
 }
 
-
-window.onkeyup = (evt) => {
-  if(evt.key == " ") {
-    console.log("delkete")
-    document.getElementById("pop").remove();
-  }
-  if(evt.key == "a") {
-    console.log(getCookie(1))
-    document.cookie = "bb" + (Number.parseInt(getCookie(1).substring(2)) + bgoffset);
-    console.log(document.cookie)
-  }
-}
-
-window.ondblclick = async () => {
+const socketStart = async () => {
     //'ws://3.84.15.164:8091/'
     const serverAddress = `ws://3.84.15.164:8091`;
   
@@ -90,10 +78,9 @@ window.ondblclick = async () => {
     }
   };
 
-var pressed = false;
 var lastpos = {x: 0, y: 0}
 var id;
-var myUser = {'id': 0, 'auth': 0, 'color': 'rgb(0, 0, 0)', 'name': ''};
+var myUser = {'id': 0, 'auth': 0, 'brush': null, 'name': ''};
 var users = []
 
   ///////
@@ -107,7 +94,7 @@ var users = []
 
     ws.addEventListener("open", () => {
       console.log("connected to server");
-      sendColor(randomColor());
+      sendBrush({'color': randomColor(), 'radius': 5, 'scaleWithCanvas': true});
     });
   
     ws.addEventListener("message", ({ data }) => {
@@ -124,6 +111,7 @@ var users = []
       } else 
       {
         data = JSON.parse(data);
+        console.log(data)
         switch(data.type) {
           case 'auth':
 
@@ -132,15 +120,14 @@ var users = []
             document.getElementById("id").innerText = data.data.auth + "_" + data.data.id
             
             break;
-          case 'image':
-
-            canvas.clearCanvas();
-            canvas.drawMany(data.data.img)
+          case 'canvas':
+            console.log("CANVAS")
+            canvas.setCanvas(data.data[0]);
 
             break;
           case 'draw':
 
-            console.log(data)
+            canvas.draw(data.data[0])
 
             break;
           case 'get':
@@ -155,14 +142,18 @@ var users = []
             break;
           case 'op':
             switch(data.data.type) {
-              case 'usercolor':
-                receiveColor(data.data.data);
+              case 'userbrush':
+                receiveBrush(data);
                 break;
               case 'username':
                 receiveName(data.data.data);
                 break;
               case 'clearcanvas':
                 canvas.clearCanvas();
+                break;
+              case 'canvasbg':
+                canvas.setImg(data.data.data[0]);
+                break;
               default:
                 break;
             }
@@ -195,7 +186,7 @@ var users = []
 
     window.onkeyup = function(evt) {
       if(evt.code == 'Space') {
-        sendColor(randomColor());
+        sendBrush({'color': randomColor(), 'radius': 5, 'scaleWithCanvas': true});
       }
     }
 

@@ -3,37 +3,27 @@ const http = require('http');
   
 const wss = new WebSocket.Server({ port: 8091 });
 
-wss.image = [];
+wss.canvas = {
+    'image': [],
+    'dim': {'width': 100, 'height': 100},
+    'url': ''
+}
+
+wss.background = "";
 wss.regids = [];
 
 wss.on("connection", function connection(ws, req) {
 
-    ws.id = req.socket.remoteAddress;
-
-    //if this IP is already registered, don't allow it
-    var dup = wss.regids.find(x => x == ws.id)
-    if(dup) {
-        ws.close();
-        return;
-    } else {
-        wss.regids.push(ws.id);
-    }
-    
-    //assign the socket auth
-    if(wss.clients.size == 1) {
-        ws.auth = "owner"
-        wss.owner = ws;
-    } else {
-        ws.auth = "guest";
-    }
-    //get and send the canvas
-    var img = wss.image;
-    ws.send(JSON.stringify({'type': 'image', 'data': { img }}), (err) => {if(err) console.log(err)});
+    /**
+     * 
+     *          Socket Functions
+     * 
+     **/
 
     wss.createUsers = () => {
         var userset = [];
         [...wss.clients.keys()].forEach((client) => {
-            userset.push({'id':[client.id], 'auth':[client.auth], 'color':[client.color ? client.color : 'rgb(200, 200, 200)'], 'name':[client.name ? client.name : '']})
+            userset.push({'id':[client.id], 'auth':[client.auth], 'brush': ([client.brush ? client.brush : {'color': 'rgb(0, 0, 0)', 'radius': '5', 'scaleWithCanvas': true}])[0], 'name':[client.name ? client.name : '']})
         });
         return userset;
     }
@@ -41,7 +31,6 @@ wss.on("connection", function connection(ws, req) {
         [...wss.clients.keys()].forEach((client) => {
             if(client.readyState == client.OPEN) {
                 client.send(JSON.stringify({'type': 'users', 'data': {userset}}), (err) => {if(err) console.log(err)});
-                //console.log(client.name)
             }
         });
     }
@@ -51,31 +40,35 @@ wss.on("connection", function connection(ws, req) {
         wss.sendUsers(wss.createUsers());
         console.log(wss.regids)
     }
-    
-    reauth(ws)
 
     wss.clearUserFromImage = (userid) => {
-        if(wss.image != wss.image.filter(x => x.data.id != userid)) {
-            wss.image = wss.image.filter(x => x.data.id != userid);
+        if(wss.canvas.image != wss.canvas.image.filter(x => x.data.id != userid)) {
+            wss.canvas.image = wss.canvas.image.filter(x => x.data.id != userid);
             return true;
         }
         return false;
     }
     wss.sendAllCanvas = () => {
-        var img = wss.image;
         [...wss.clients.keys()].forEach((client) => {
             if(client.readyState == client.OPEN)
-                client.send(JSON.stringify({'type': 'image', 'data': { img }}), (err) => {if(err) console.log(err)});
+                client.send(JSON.stringify({'type': 'canvas', 'data': [wss.canvas]}), (err) => {if(err) console.log(err)});
         });
         
     }
 
+    /**
+     * 
+     *          Socket Handling
+     * 
+     **/
+
     ws.on("message", (msg) => {
         var message = JSON.parse(msg);
+        console.log(message)
         switch(message.type) {
             case 'draw':
                 {
-                    wss.image.push(message);
+                    wss.canvas.image.push(message);
                     [...wss.clients.keys()].forEach((client) => {
                         if(ws.id != client.id) {
                             client.send(JSON.stringify({'type': 'draw', 'data': [message.data]}), (err) => {if(err) console.log(err)});
@@ -85,29 +78,24 @@ wss.on("connection", function connection(ws, req) {
                 break;
             case 'canvas':
                 {
-                    [...wss.clients.keys()].forEach((client) => {
-                        if(client != wss.owner && client.readyState == client.OPEN) {
-                            client.send(wss.image[0], (err) => {if(err) console.log(err)});
-                        }
-                    });
+                    wss.canvas.dim = message.data.dim;
+                    wss.canvas.url = message.data.url;
+                    wss.sendAllCanvas();
                 }
                 break;
             case 'op':
                 switch(message.data.type) {
-                    case 'usercolor':
+                    case 'userbrush':
                         {
-                            ws.color = message.data.data.color;
+                            ws.brush = message.data.data.brush;
                             reauth(ws);
                         }
                         break;
                     case 'clearcanvas':
                         {
                             if(ws.id == wss.owner.id) {
-                                wss.image = [];
-                                [...wss.clients.keys()].forEach((client) => {
-                                    if(client.readyState == client.OPEN)
-                                        client.send(JSON.stringify({'type':'op', 'data':{'type':'clearcanvas', 'data':''}}))
-                                });
+                                wss.canvas.image = []; wss.canvas.url = '';
+                                wss.sendAllCanvas();
                             }
                         }
                         break;
@@ -163,6 +151,35 @@ wss.on("connection", function connection(ws, req) {
             reauth(client);
         });
     });
+
+    /**
+     * 
+     *          First-time Calls
+     * 
+     **/
+
+
+    ws.id = wss.getUniqueID(req.socket.remoteAddress);
+
+    //if this IP is already registered, don't allow it
+    var dup = wss.regids.find(x => x == ws.id)
+    if(dup) {
+        ws.close();
+        return;
+    } else {
+        wss.regids.push(ws.id);
+    }
+    
+    //assign the socket auth
+    if(wss.clients.size == 1) {
+        ws.auth = "owner"
+        wss.owner = ws;
+    } else {
+        ws.auth = "guest";
+    }
+    reauth(ws)
+    wss.sendAllCanvas()
+
 });
 function sfc32(a, b, c, d) {
     return function() {
@@ -177,7 +194,11 @@ function sfc32(a, b, c, d) {
       return (t >>> 0) / 4294967296;
     }
 }
+function intSafev4(ip) {
+    return [...ip.matchAll(/[0-9]{1,3}/g)].join('');
+}
 wss.getUniqueID = function (ip) {
+    ip = intSafev4(ip);
     var seed = ip ^ 0xDEADBEEF;
     var rand = sfc32(0x9E3779B9, 0x243F6A88, 0xB7E15162, seed);
     for (var i = 0; i < 15; i++) rand();
@@ -186,3 +207,4 @@ wss.getUniqueID = function (ip) {
     }
     return s4() + s4() + '-' + s4();
 };
+

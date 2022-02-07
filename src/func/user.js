@@ -44,8 +44,8 @@ var getUserEditBox = (user) => {
 }
 
 const userHasAuth = () => { return myUser.auth == "owner"; }
-var sendColor = (color) => { wsend(JSON.stringify({ 'type': 'op', 'data': { 'type': 'usercolor', 'data': { color } } })) }
-var receiveColor = (color) => { myUser.color = color[0].color; }
+var sendBrush = (brush) => { wsend(JSON.stringify({ 'type': 'op', 'data': { 'type': 'userbrush', 'data': { brush } } })) }
+var receiveBrush = (brush) => { console.log(brush); myUser.brush = brush; }
 var receiveName = (name) => { myUser.name = name; }
 var toggleUserEdit = (elem) => { elem.className === "useredit open" ? elem.className = "useredit closed" : elem.className = "useredit open"; }
 
@@ -53,6 +53,7 @@ var setUsers = (usersdata) => {
     $("#users")[0].innerHTML = "";
     users = [];
     for (user of usersdata.userset) {
+        console.log(user)
         if (user.id == id) { myUser = user; }
         var c = "";
         c += (user.auth == "guest" ? " guest" : "");
@@ -76,7 +77,7 @@ var setUsers = (usersdata) => {
         $("#users")[0].appendChild(div);
         $("#users")[0].appendChild(getUserEditBox(users.find(x => x.id == userSettings.id)));
         $("#users")[0].appendChild(document.createElement("br"));
-        document.getElementById(user.id).style.setProperty('box-shadow', `10px 0px 0px ${user.color} inset`);
+        document.getElementById(user.id).style.setProperty('box-shadow', `10px 0px 0px ${user.brush.color} inset`);
     }
     $("#clear")[0].className = userHasAuth() ? "button enabled" : "button disabled";
 }
