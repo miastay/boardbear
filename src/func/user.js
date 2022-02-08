@@ -1,3 +1,9 @@
+var myUser = {'id': 0, 'auth': 0, 'brush': null, 'name': ''};
+
+var getMe = () => {
+    return myUser;
+}
+
 var kickUser = (userid) => {
     console.log(" kicking " + (userid = userid.substring(2)));
     wsend(JSON.stringify({ 'type': 'op', 'data': { 'type': 'kickuser', 'data': { userid } } }))

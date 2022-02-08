@@ -5,8 +5,10 @@ var randomColor = () => {
 
 function wsend(msg) {
   if(ws && ws.readyState == 1) {
-    ws.send(msg);
+    console.log("sending")
+    return ws.send(msg);
   }
+  return console.log("failed to send " + msg.type)
 }
 
 function getCookie(index) {return document.cookie.split(';').length < index ? "" : document.cookie.split(';')[index].trim()}
@@ -30,7 +32,6 @@ function advJSONParse(jstr) {
   return json;
 }
 
-
 var ws;
 var container;
 var field;
@@ -50,6 +51,16 @@ window.onload = () => {
   $.getScript("user.js", function() {
     console.log("loaded user.js")
   });
+  
+  $("#pdfb")[0].onclick = function(e) {
+    e.preventDefault();
+    fetch("/", {body: new FormData($("#pdfpost")[0]), method: "POST"}).then(function(response) {
+        canvas.loadImg('/pdf.1.png');
+    }).catch(function(err) {
+        console.log(err);
+    })
+  }
+
 
   window.onbeforeunload = () => {
     //updates go here before reload
@@ -80,7 +91,6 @@ const socketStart = async () => {
 
 var lastpos = {x: 0, y: 0}
 var id;
-var myUser = {'id': 0, 'auth': 0, 'brush': null, 'name': ''};
 var users = []
 
   ///////

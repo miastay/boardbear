@@ -5,7 +5,7 @@ const wss = new WebSocket.Server({ port: 8091 });
 
 wss.canvas = {
     'image': [],
-    'dim': {'width': 100, 'height': 100},
+    'dim': {'width': 1530, 'height': 1980},
     'url': ''
 }
 
@@ -78,6 +78,8 @@ wss.on("connection", function connection(ws, req) {
                 break;
             case 'canvas':
                 {
+                    console.log("canvas")
+                    console.log(message.data)
                     wss.canvas.dim = message.data.dim;
                     wss.canvas.url = message.data.url;
                     wss.sendAllCanvas();

@@ -16,15 +16,16 @@ canvas.loadImg = (url, callback) => {
         var image = new Image();
         image.onload = function (){
             canvas.url = url;
+            canvas.setImg(url);
             canvas.width = image.width; canvas.height = image.height;
             canvas.sendCanvas();
         };
-        image.onerror = function() {return};
+        image.onerror = function(err) { console.log( err)};
         image.src = url;
     }
 }
 canvas.setImg = (url) => {
-    console.log(url)
+    console.log("setimg " + url)
     canvas.style.background = `url(${url}) no-repeat local white`;
 }
 
@@ -32,8 +33,7 @@ canvas.clearCanvas = () => {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
 canvas.sendCanvas = () => {
-    var img = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-    wsend(JSON.stringify({'type':'canvas', 'data': {'image': img, 'dim': {'width': canvas.width, 'height': canvas.height}, 'url': canvas.url}}));
+    wsend(JSON.stringify({'type':'canvas', 'data': {'dim': {'width': canvas.width, 'height': canvas.height}, 'url': canvas.url}}));
 }
 canvas.setCanvas = (cdata) => {
     console.log(cdata)
@@ -53,6 +53,7 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
     var cy = evt.pageY - $("#canvas").offset().top + $('#scroll_field')[0].scrollTop;
     cy /= canvas.scale;
 
+
     switch(evt.type) {
         
         case 'mousemove':
@@ -71,7 +72,7 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
                     else {
             
                         //draw event
-                        const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y}, 'new': {x: cx, y: cy}, 'id': myUser.id, 'brush': myUser.brush}};
+                        const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y}, 'new': {x: cx, y: cy}, 'id': getMe().id, 'brush': getMe().brush}};
                         canvas.draw(messageBody.data);
                         wsend(JSON.stringify(messageBody));
                         
@@ -79,10 +80,6 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
                 } else {
                     last_transform = {x: (cx), y: (cy)};
                 }
-                if(canvas.assist) {
-                    canvas.style.transformOrigin = `${evt.pageX}px ${evt.pageY}px`
-                }
-                canvas.style.transform = `scale(${canvas.scale}) translateX(${canvas.position.x}px) translateY(${canvas.position.y}px)`;
                 setTimeout(function(){lastpos = {x: (cx), y: (cy)}}, 10);
             }
         break;
@@ -101,8 +98,6 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
             {
                 canvas.scale += (-0.1 * (canvas.scale/2) * (evt.originalEvent.deltaY)/Math.abs((evt.originalEvent.deltaY)));
                 canvas.scale = Math.min(10, Math.max(0.05, canvas.scale))
-                canvas.style.transformOrigin = `${csx}px ${csy}px`
-                canvas.style.transform = `scale(${canvas.scale}) translateX(${canvas.position.x}px) translateY(${canvas.position.y}px)`;
             }
         break;
         case 'keydown' :
@@ -114,6 +109,8 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
             }
         break;
     }
+canvas.style.transform = `translateX(${canvas.position.x * canvas.scale}px) translateY(${canvas.position.y * canvas.scale}px) scale(${canvas.scale}) translateX(${canvas.width/2}px) translateY(${canvas.height/2}px)`;
+
 }); 
 /*
 document.onmousemove = (evt) => {

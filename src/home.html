@@ -24,9 +24,10 @@
             <div class="tools"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>
                 <div id="clear" class="button">clear</div>
                 <input id="urlin" type="text" placeholder="enter a url bg..." onchange="canvas.loadImg($(this)[0].value)"/>
-                <form action="/pdf" method="post" enctype="multipart/form-data">
+                <form id="pdfpost" action="/" method="post" enctype="multipart/form-data">
                     <input type="file" name="ffupload"/>
-                    <input type="submit">
+                    <input type="text" name="quality" value="100"/>
+                    <input id="pdfb" type="button">
                 </form>
             </div>
         </div>

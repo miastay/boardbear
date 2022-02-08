@@ -26,24 +26,32 @@ app.get('/', (req, res) => {
     }
     res.sendFile('home.html', options)
 })
-app.post('/pdf', upload.single('ffupload'), function(req, res){
+app.post('/', upload.single('ffupload'), function(req, res){
+
+    console.log(req.body)
    
+    var maxq = req.body.quality ? (4000 * (Number.parseInt(req.body.quality)/100)) : 0;
+    console.log(maxq)
+
     gm(req.file.path)
     .size(function (err, size) {
     if (!err) {
+        const aspect_ratio = (size.width*1.0)/size.height;
+        console.log(aspect_ratio)
         const options = {
             density: 100,
             saveFilename: "pdf",
             savePath: "./img",
             format: "png", 
-            width: size.width,
-            height: size.height
+            width: maxq,//aspect_ratio*maxq,
+            height: maxq/aspect_ratio
         };
         var cvt = fromPath(req.file.path, options);
         cvt(1);
+    } else {
     }
     });
-    res.redirect('/');
+    res.json('');
 });
 app.get('/boardbear.js', (req, res) => {
     const options = {
