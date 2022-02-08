@@ -68,12 +68,17 @@ wss.on("connection", function connection(ws, req) {
         switch(message.type) {
             case 'draw':
                 {
-                    wss.canvas.image.push(message);
+                    //wss.canvas.image.push(message);
                     [...wss.clients.keys()].forEach((client) => {
                         if(ws.id != client.id) {
                             client.send(JSON.stringify({'type': 'draw', 'data': [message.data]}), (err) => {if(err) console.log(err)});
                         }
                     });
+                }
+                break;
+            case 'bulkdraw':
+                {
+                    wss.canvas.image.splice(0, 0, {'user': ws.id, 'data': message.data});
                 }
                 break;
             case 'canvas':
@@ -129,6 +134,17 @@ wss.on("connection", function connection(ws, req) {
                                 }
                             });
                             reauth(ws);
+                        }
+                        break;
+                    case 'userundo':
+                        {
+                            let lastop = wss.canvas.image.lastIndexOf(wss.canvas.image.find(op => op.user == ws.id));
+                            console.log(wss.canvas.image + ";;" + lastop) 
+                            if(lastop != -1) {
+                                wss.canvas.image.splice(lastop, 1);
+                                wss.sendAllCanvas();
+                            }
+                            //while(wss.canvas.image.pop().user != ws.id) {}
                         }
                         break;
                     default:

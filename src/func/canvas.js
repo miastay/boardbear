@@ -16,7 +16,7 @@ canvas.loadImg = (url, callback) => {
         var image = new Image();
         image.onload = function (){
             canvas.url = url;
-            canvas.setImg(url);
+            //canvas.setImg(url);
             canvas.width = image.width; canvas.height = image.height;
             canvas.sendCanvas();
         };
@@ -25,8 +25,8 @@ canvas.loadImg = (url, callback) => {
     }
 }
 canvas.setImg = (url) => {
-    console.log("setimg " + url)
     canvas.style.background = `url(${url}) no-repeat local white`;
+    console.log(" finished setting image ")
 }
 
 canvas.clearCanvas = () => {
@@ -38,21 +38,27 @@ canvas.sendCanvas = () => {
 canvas.setCanvas = (cdata) => {
     console.log(cdata)
     canvas.clearCanvas();
-    canvas.width = cdata.dim.width;
-    canvas.height = cdata.dim.height;
     canvas.setImg(cdata.url);
-    canvas.drawMany(cdata.image);
+    if(canvas.width != cdata.dim.width || canvas.height != cdata.dim.height) {
+        canvas.width = cdata.dim.width;
+        canvas.height = cdata.dim.height;
+        canvas.scale = (0.8 * $("#scroll_field")[0].clientWidth / canvas.width);
+        canvas.position.x = 0.2 * $("#scroll_field")[0].clientWidth;
+        canvas.position.y = 0.2 * $("#scroll_field")[0].clientWidth;
+    }
+    for(bulkop of cdata.image) {
+        canvas.drawMany(bulkop.data.operation);
+    }
+    canvas.setTransform();
 } 
 var csx, csy;
+var operation = [];
 $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
-
-    
 
     var cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;
     cx /= canvas.scale;
     var cy = evt.pageY - $("#canvas").offset().top + $('#scroll_field')[0].scrollTop;
     cy /= canvas.scale;
-
 
     switch(evt.type) {
         
@@ -73,9 +79,10 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
             
                         //draw event
                         const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y}, 'new': {x: cx, y: cy}, 'id': getMe().id, 'brush': getMe().brush}};
+                        operation.push(messageBody);
                         canvas.draw(messageBody.data);
                         wsend(JSON.stringify(messageBody));
-                        
+
                     }
                 } else {
                     last_transform = {x: (cx), y: (cy)};
@@ -85,6 +92,7 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
         break;
         case 'mousedown':
             {
+                operation = [];
                 evt.mdown = true;
                 mouse_state = evt;
             }
@@ -92,6 +100,9 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
         case 'mouseup' :
             {
                 mouse_state = null;
+                console.log(operation)
+                //canvas.drawMany(operation);
+                wsend(JSON.stringify({'type': 'bulkdraw', 'data': {operation}}));
             }
         break;
         case 'mousewheel' :
@@ -106,12 +117,20 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
                 {
                     evt.preventDefault();
                 }
+                if(evt.key == 'z' && evt.ctrlKey) {
+                    evt.preventDefault();
+                    wsend(JSON.stringify({'type':'op', 'data':{'type':'userundo'}}));
+                }
             }
         break;
     }
-canvas.style.transform = `translateX(${canvas.position.x * canvas.scale}px) translateY(${canvas.position.y * canvas.scale}px) scale(${canvas.scale}) translateX(${canvas.width/2}px) translateY(${canvas.height/2}px)`;
-
+    canvas.setTransform();
 }); 
+
+canvas.setTransform = () => {
+    canvas.style.transformOrigin = '0px 0px'
+    canvas.style.transform = `scale(${canvas.scale}) translateX(${canvas.position.x}px) translateY(${canvas.position.y}px)`;
+}
 /*
 document.onmousemove = (evt) => {
     var cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;

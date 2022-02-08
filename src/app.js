@@ -28,10 +28,7 @@ app.get('/', (req, res) => {
 })
 app.post('/', upload.single('ffupload'), function(req, res){
 
-    console.log(req.body)
-   
     var maxq = req.body.quality ? (4000 * (Number.parseInt(req.body.quality)/100)) : 0;
-    console.log(maxq)
 
     gm(req.file.path)
     .size(function (err, size) {
@@ -40,18 +37,18 @@ app.post('/', upload.single('ffupload'), function(req, res){
         console.log(aspect_ratio)
         const options = {
             density: 100,
-            saveFilename: "pdf",
+            saveFilename: req.file.filename,
             savePath: "./img",
             format: "png", 
             width: maxq,//aspect_ratio*maxq,
             height: maxq/aspect_ratio
         };
         var cvt = fromPath(req.file.path, options);
-        cvt(1);
+        cvt(1).then(function() {res.json({'url': req.file.filename + ".1.png"});});
     } else {
+        res.json('');
     }
     });
-    res.json('');
 });
 app.get('/boardbear.js', (req, res) => {
     const options = {

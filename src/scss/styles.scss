@@ -209,6 +209,9 @@ div {
     overflow: hidden;
     border: solid black 1px;
     background:rgb(71, 71, 71);
+    .loading {
+        filter: brightness(0.1);
+    }
 }
 
 .pop {

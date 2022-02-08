@@ -32,6 +32,10 @@ function advJSONParse(jstr) {
   return json;
 }
 
+function toggleLoading(elem) {
+  $(elem).toggleClass('loading');
+}
+
 var ws;
 var container;
 var field;
@@ -54,11 +58,12 @@ window.onload = () => {
   
   $("#pdfb")[0].onclick = function(e) {
     e.preventDefault();
-    fetch("/", {body: new FormData($("#pdfpost")[0]), method: "POST"}).then(function(response) {
-        canvas.loadImg('/pdf.1.png');
-    }).catch(function(err) {
-        console.log(err);
-    })
+    var t = Date.now();
+    console.log("started getting")
+    //toggleLoading($("#scroll_field"));
+    fetch("/", {body: new FormData($("#pdfpost")[0]), method: "POST"})
+    .then(response => response.json())
+    .then(data => { canvas.loadImg(data.url); console.log("took " + (Date.now() - t) + " ms") });
   }
 
 
