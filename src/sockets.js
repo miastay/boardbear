@@ -66,6 +66,10 @@ wss.on("connection", function connection(ws, req) {
         var message = JSON.parse(msg);
         console.log(message)
         switch(message.type) {
+            case 'close': {
+                ws.close(message.data);
+                break;
+            }
             case 'draw':
                 {
                     //wss.canvas.image.push(message);
@@ -144,7 +148,7 @@ wss.on("connection", function connection(ws, req) {
                                 wss.canvas.image.splice(lastop, 1);
                                 wss.sendAllCanvas();
                             }
-                            //while(wss.canvas.image.pop().user != ws.id) {}
+                            ws.send(JSON.stringify({'type':'op', 'data':{'type':'userundo', 'data': (lastop != -1)}}))
                         }
                         break;
                     default:

@@ -11,49 +11,50 @@ const M1SHIFTCTRL = 4;
 var mouse_state;
 var last_transform;
 
+canvas.canUndo = true;
+
 canvas.loadImg = (url, callback) => {
     if(userHasAuth()) {
         var image = new Image();
         image.onload = function (){
-            canvas.url = url;
-            //canvas.setImg(url);
-            canvas.width = image.width; canvas.height = image.height;
-            canvas.sendCanvas();
+            canvas.sendCanvas(image.width, image.height, image.src);
         };
         image.onerror = function(err) { console.log( err)};
         image.src = url;
     }
 }
 canvas.setImg = (url) => {
+    canvas.url = url;
     canvas.style.background = `url(${url}) no-repeat local white`;
-    console.log(" finished setting image ")
 }
-
 canvas.clearCanvas = () => {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
-canvas.sendCanvas = () => {
-    wsend(JSON.stringify({'type':'canvas', 'data': {'dim': {'width': canvas.width, 'height': canvas.height}, 'url': canvas.url}}));
+canvas.sendCanvas = (width, height, src) => {
+    wsend(JSON.stringify({'type':'canvas', 'data': {'dim': {'width': width, 'height': height}, 'url': src}}));
 }
-canvas.setCanvas = (cdata) => {
-    console.log(cdata)
+canvas.setCanvas = (cdata, reset, callback) => {
     canvas.clearCanvas();
     canvas.setImg(cdata.url);
-    if(canvas.width != cdata.dim.width || canvas.height != cdata.dim.height) {
+    if(reset) {
         canvas.width = cdata.dim.width;
         canvas.height = cdata.dim.height;
-        canvas.scale = (0.8 * $("#scroll_field")[0].clientWidth / canvas.width);
         canvas.position.x = 0.2 * $("#scroll_field")[0].clientWidth;
-        canvas.position.y = 0.2 * $("#scroll_field")[0].clientWidth;
+        canvas.position.y = 0.2 * $("#scroll_field")[0].clientHeight;
+        canvas.scale = (0.8 * $("#scroll_field")[0].clientWidth / canvas.width);
+        canvas.setTransform();
     }
     for(bulkop of cdata.image) {
         canvas.drawMany(bulkop.data.operation);
     }
-    canvas.setTransform();
-} 
+    callback();
+}
+canvas.receiveUndo = (didUndo) => {
+    canvas.canUndo = didUndo;
+}
 var csx, csy;
 var operation = [];
-$('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
+$('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewheel keydown",function(evt){
 
     var cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;
     cx /= canvas.scale;
@@ -62,12 +63,14 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
 
     switch(evt.type) {
         
+        case 'touchmove':
+            //evt.preventDefault();
         case 'mousemove':
             {
                 csx = cx;
                 csy = cy;
 
-                if(mouse_state) {
+                if(mouse_state && evt.target == canvas) {
                     if(evt.shiftKey || evt.buttons == 4) {
             
                         //move event
@@ -90,19 +93,26 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
                 setTimeout(function(){lastpos = {x: (cx), y: (cy)}}, 10);
             }
         break;
+        case 'touchstart':
+            //evt.preventDefault();
         case 'mousedown':
             {
+                
                 operation = [];
                 evt.mdown = true;
                 mouse_state = evt;
             }
         break;
+        case 'touchend' :
+            //evt.preventDefault();
         case 'mouseup' :
             {
                 mouse_state = null;
-                console.log(operation)
-                //canvas.drawMany(operation);
-                wsend(JSON.stringify({'type': 'bulkdraw', 'data': {operation}}));
+                if(operation.length > 0) {
+                    wsend(JSON.stringify({'type': 'bulkdraw', 'data': {operation}}));
+                    canvas.canUndo = true;
+                }
+                    
             }
         break;
         case 'mousewheel' :
@@ -117,7 +127,7 @@ $('body').on("mousedown mouseup mousemove mousewheel keydown",function(evt){
                 {
                     evt.preventDefault();
                 }
-                if(evt.key == 'z' && evt.ctrlKey) {
+                if(evt.key == 'z' && evt.ctrlKey && canvas.canUndo) {
                     evt.preventDefault();
                     wsend(JSON.stringify({'type':'op', 'data':{'type':'userundo'}}));
                 }

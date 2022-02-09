@@ -27,7 +27,7 @@ var getRenameElem = (id) => {
     renameElem.className = "button";
     renameElem.id = "rn" + id;
     renameElem.textContent = "rename"
-    renameElem.onclick = function () { renameUser($(this)[0].id) }
+    renameElem.onclick = function () { console.log(renameUser($(this)[0].id) + "renamed") }
     return renameElem
 }
 
@@ -49,6 +49,10 @@ var getUserEditBox = (user) => {
     return div;
 }
 
+var setResponseTime = (ms) => {
+    $("#resp").text(`${ms}ms`);
+}
+
 const userHasAuth = () => { return myUser.auth == "owner"; }
 var sendBrush = (brush) => { wsend(JSON.stringify({ 'type': 'op', 'data': { 'type': 'userbrush', 'data': { brush } } })) }
 var receiveBrush = (brush) => { console.log(brush); myUser.brush = brush; }
@@ -59,7 +63,6 @@ var setUsers = (usersdata) => {
     $("#users")[0].innerHTML = "";
     users = [];
     for (user of usersdata.userset) {
-        console.log(user)
         if (user.id == id) { myUser = user; }
         var c = "";
         c += (user.auth == "guest" ? " guest" : "");
@@ -78,7 +81,7 @@ var setUsers = (usersdata) => {
         userSettings.id = user.id;
         userSettings.className = "usersettings";
         userSettings.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAABcUlEQVRIia2WvU7DMBSFv9KWofAC0Lmq+Bk6MSGViQ4gGCjPhECgvhAKkAJSgLLwGmyNMhTSMuQGnMg/acKRrpTY95xzbceOaxTHKrAmzyHwtQS3EN6BhcT4v8WbwEwxiIB6WbEeEAADpW1bEU+jo/QPhNMrIv4pAnNgBJyRTEne4A44BW4kdyFcq4mvEVo2HmwG+8B3BfEYOLAZAFxVMLjIizU0Bq8G4xB4kec9YF2T82irvAnsAs+aynxgQ8ndRL/wHrAlWplRTMh+52pMc+KqSWjgzIA30aZlSErj1jJqz8FtrVjIKWol+37RIFmcyFDFlGQ68mhjnqKIZI0yH1Ed6AJPGsI4Z9KWonSL3MFxTp0bqgpFwLNUfmwTTjEykIvEtUv8kL+Dq0zMgSObQVBBPI3AZqAe1zFwCQzR79p74ERyYmlzHtepiQ/0lbYdjUFX6e8LxyluQulfZpGdDMkN4kN5n5BMixOFtrqg1LXlB2vw9K/XiPbzAAAAAElFTkSuQmCC"
-        userSettings.onclick = function () { toggleUserEdit($("#edit" + ($(this)[0].id))) }
+        userSettings.onclick = function () { console.log($("#edit" + ($(this)[0].id))); toggleUserEdit($("#edit" + ($(this)[0].id))[0]) }
         div.appendChild(userSettings);
         $("#users")[0].appendChild(div);
         $("#users")[0].appendChild(getUserEditBox(users.find(x => x.id == userSettings.id)));

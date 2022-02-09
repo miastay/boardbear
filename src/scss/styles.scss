@@ -6,10 +6,16 @@
     background-color: $theme !important;
     color: white !important;
 }
+@mixin feedback($state) {
+    background: linear-gradient(0deg, $state 0%, $state 100%) 0% 0%;
+    background-size: 100% !important;
+}
+$nz: calc(1vw + 1vh);
+$good: rgb(158, 255, 162);
+$bad: rgb(255, 173, 158);
 
 
 * {
-    
     user-select: none;
     font-family: 'Work Sans', sans-serif;
 /*
@@ -23,14 +29,21 @@
 
     box-sizing: border-box;
     //border: solid 1px red;
-
-    $tick: 0;
-
+    
 }
+
+
 :root {
     --mouse-x: 0;
     --mouse-y: 0;
     --border-round: 15px;
+    --pulse-width: 15;
+}
+html {
+    @media only screen and (max-width: 700px) {
+        
+    }
+    overflow: hidden;
 }
 body {
     overflow: hidden;
@@ -73,6 +86,12 @@ div {
 }
 #id {
     position: absolute;
+    z-index: 10;
+    background: white;
+}
+#resp {
+    position: absolute;
+    top: 50px;
     z-index: 10;
     background: white;
 }
@@ -262,9 +281,11 @@ div {
     background: rgba(255, 255, 255, 1);
     text-align: center;
     width: 30vw;
-    height: 50vh;
+    overflow: hidden;
+    //height: calc(min(40vw, 60vh));
     margin-left: 35vw;
     margin-top: 20vh;
+
     filter: none;
     #logo {
         margin-bottom: 15%;
@@ -274,9 +295,69 @@ div {
         }
     }
     .item {
+        font-size: calc($nz * 0.9);
         margin-bottom: 5%;
         width: 100%;
-        padding: 1vw;
+        padding: calc($nz * 0.9);
+        line-height: 200%;
+        &.bg {
+            background-size: 0%;
+            transition: background-size 1s ease;
+        }
+        
     }
+    .item.bot {
+        margin-bottom: 0%;
+    }
+    .transparent {
+        background-color:rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(200px) !important;
+    }
+
+    #join_sub_code {
+        padding: 0% 5%;
+    }
+
+    input.code {
+        
+        &.entry {
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            &[type=number] {
+                -moz-appearance: textfield;
+            }
+            position: relative;
+            width: 13%;
+            //padding-bottom: 11%;
+            font-size: 1em;
+        }
+    }
+    .good {
+        background: linear-gradient(0deg, $good 0%, $good 100%) 0% 0%;
+        background-repeat: no-repeat;
+        background-size: 100% !important;
+    }
+    .bad {
+        background: linear-gradient(0deg, $bad 0%, $bad 100%) 0% 0%;
+        background-repeat: no-repeat;
+        background-size: 100% !important;
+    }
+
+    .fnav::after {
+        content: '>';
+        position: relative;
+        float: right;
+    }
+    .bnav::before {
+        content: '<';
+        position: relative;
+        float: left; 
+    }
+}
+.hide {
+    display: none;
 }
 

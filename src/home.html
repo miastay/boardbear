@@ -1,8 +1,10 @@
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
         <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
         <script src="/boardbear.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet">
@@ -12,12 +14,37 @@
     <body>
         <title>boardbear!</title>
         <span id="id"></span>
+        <span id="resp"></span>
         <div id="main">
-            <div id="pop" class="pop">
+            <div id="pop" class="pop b">
                 <div id="landing">
                     <div id="logo"><img src="logo-500.png"/></div>
-                    <div id="join_button" class="item button enabled" onclick='$("#pop").remove(); socketStart()'>join a board</div>
-                    <div id="create_button" class="item button enabled">create a board</div>
+                    <div id="L_inner">
+                        <div id="L_join">
+                            <div id="L_join_front">
+                                <div id="join_button" class="item button enabled fnav">join a board</div>
+                            </div>
+                            <div id="join_sub" class="item hide bg">enter join code
+                                <div id="join_sub_code" class="item">
+                                    <input id="jsc0" type="number" class="code entry"/>
+                                    <input id="jsc1" type="number" class="code entry"/>
+                                    <input id="jsc2" type="number" class="code entry"/>
+                                    <input id="jsc3" type="number" class="code entry"/>
+                                    <input id="jsc4" type="number" class="code entry"/>
+                                    <input id="jsc5" type="number" class="code entry"/>
+                                </div>
+                                <div id="join_enter" class="item transparent bot button enabled hide fnav">enter</div>
+                            </div>
+                            <div id="join_back" class="item bot button enabled hide bnav">back</div>
+                        </div>
+                        <div id="L_create">
+                            <div id="L_create_front">
+                                <div id="create_button" class="item bot button enabled fnav">create a board</div>
+                            </div>
+                            <div id="create_sub" class="item hide">enter code</div>
+                            <div id="create_back" class="item bot button enabled hide bnav">back</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div id="scroll_field" class="field"><canvas id="canvas" width="500" height="500"></canvas></div>
@@ -25,8 +52,9 @@
                 <div id="clear" class="button">clear</div>
                 <input id="urlin" type="text" placeholder="enter a url bg..." onchange="canvas.loadImg($(this)[0].value)"/>
                 <form id="pdfpost" action="/" method="post" enctype="multipart/form-data">
-                    <input type="file" name="ffupload"/>
+                    <input id="pdff" type="file" name="ffupload"/>
                     <input type="text" name="quality" value="100"/>
+                    <input id="pdfpr" type="hidden" name="replace" value="a"/>
                     <input id="pdfb" type="button">
                 </form>
             </div>
