@@ -63,6 +63,18 @@ function appRun() {
         console.debug("[ app->" + (__function) + " @ " + new Date().toLocaleString() + "]: ", msg)
     }
 
+    function cleanDirs() {
+        fs.rmdir('./upload', function() {
+            fs.mkdir('./upload', function() { "created upload dir" })
+        })
+        fs.rmdir('./static/uploads', function() {
+            fs.mkdir('./static/uploads', function() { "created static uploads dir" })
+        })
+    }
+    cleanDirs();
+
+
+
     /*      board storage & logic
     */
     var boards = [
@@ -160,6 +172,12 @@ function appRun() {
     })
     app.get('/bb', (req, res) => {
         res.json({'new':'msg'})
+    })
+    app.get('/v', (req, res) => {
+        const options = {
+            root: './static'
+        }
+        res.sendFile('vc.html', options)
     })
     app.listen(8081, function() {
         console.log(`running on port ${8081}`)
