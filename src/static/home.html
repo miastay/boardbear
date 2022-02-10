@@ -50,7 +50,25 @@
             </div>
             <div id="loader" class="loading"></div>
             <div id="alert" class="item"></div><div id="error" class="item"></div>
-            <div id="scroll_field" class="field"><canvas id="canvas" width="500" height="500"></canvas></div>
+            <div id="scroll_field" class="field"><canvas id="canvas" width="1350" height="1700"></canvas></div>
+            <div class="tools left">
+                <div id="b2" class="button enabled selected" onclick="ptools.setActiveTool(ptools.move); $(this).addClass('selected')"><svg class="move" viewBox="113.67 170.887 109.29 109.29" width="109.29" height="109.29">
+                    <rect x="225.425" y="183.597" width="90" height="6.489" style="stroke: rgb(0, 0, 0); stroke-width: 7px;" transform="matrix(0, 1, -1, 0, 355.086045, -45.425009)"></rect>
+                    <path d="M 161.7216 176.2129 Q 168.315 165.562 174.9084 176.2129 L 183.6996 190.4141 Q 190.293 201.065 177.1062 201.065 L 159.5238 201.065 Q 146.337 201.065 152.9304 190.4141 Z" data-bx-shape="triangle 146.337 165.562 43.956 35.503 0.5 0.3 1@ba553c6e" style="stroke: rgb(0, 0, 0);"></path>
+                    <path d="M -174.9084 -274.8521 Q -168.315 -285.503 -161.7216 -274.8521 L -152.9304 -260.6509 Q -146.337 -250 -159.5238 -250 L -177.1062 -250 Q -190.293 -250 -183.6996 -260.6509 Z" data-bx-shape="triangle -190.293 -285.503 43.956 35.503 0.5 0.3 1@378862c4" style="stroke: rgb(0, 0, 0);" transform="matrix(-1, 0, 0, -1, 0, 0)"></path>
+                    <rect x="225.425" y="183.597" width="90" height="6.489" style="stroke: rgb(0, 0, 0); stroke-width: 7px;" transform="matrix(-1, 0, 0, -1, 439.2725, 412.303554)"></rect>
+                    <path d="M 161.7216 176.2129 Q 168.315 165.562 174.9084 176.2129 L 183.6996 190.4141 Q 190.293 201.065 177.1062 201.065 L 159.5238 201.065 Q 146.337 201.065 152.9304 190.4141 Z" data-bx-shape="triangle 146.337 165.562 43.956 35.503 0.5 0.3 1@ba553c6e" style="stroke: rgb(0, 0, 0);" transform="matrix(0, 1, -1, 0, 393.847491, 57.217509)"></path>
+                    <path d="M -174.9084 -274.8521 Q -168.315 -285.503 -161.7216 -274.8521 L -152.9304 -260.6509 Q -146.337 -250 -159.5238 -250 L -177.1062 -250 Q -190.293 -250 -183.6996 -260.6509 Z" data-bx-shape="triangle -190.293 -285.503 43.956 35.503 0.5 0.3 1@378862c4" style="stroke: rgb(0, 0, 0);" transform="matrix(0, -1, 1, 0, 393.847491, 57.217509)"></path>
+                </svg></div>
+                <div id="b2" class="button enabled" onclick="ptools.setActiveTool(ptools.brush); $(this).addClass('selected')"><svg class="move" viewBox="113.67 170.887 109.29 109.29" width="109.29" height="109.29">
+                    <rect x="225.425" y="183.597" width="90" height="6.489" style="stroke: rgb(0, 0, 0); stroke-width: 7px;" transform="matrix(0, 1, -1, 0, 355.086045, -45.425009)"></rect>
+                    <path d="M 161.7216 176.2129 Q 168.315 165.562 174.9084 176.2129 L 183.6996 190.4141 Q 190.293 201.065 177.1062 201.065 L 159.5238 201.065 Q 146.337 201.065 152.9304 190.4141 Z" data-bx-shape="triangle 146.337 165.562 43.956 35.503 0.5 0.3 1@ba553c6e" style="stroke: rgb(0, 0, 0);"></path>
+                    <path d="M -174.9084 -274.8521 Q -168.315 -285.503 -161.7216 -274.8521 L -152.9304 -260.6509 Q -146.337 -250 -159.5238 -250 L -177.1062 -250 Q -190.293 -250 -183.6996 -260.6509 Z" data-bx-shape="triangle -190.293 -285.503 43.956 35.503 0.5 0.3 1@378862c4" style="stroke: rgb(0, 0, 0);" transform="matrix(-1, 0, 0, -1, 0, 0)"></path>
+                    <rect x="225.425" y="183.597" width="90" height="6.489" style="stroke: rgb(0, 0, 0); stroke-width: 7px;" transform="matrix(-1, 0, 0, -1, 439.2725, 412.303554)"></rect>
+                    <path d="M 161.7216 176.2129 Q 168.315 165.562 174.9084 176.2129 L 183.6996 190.4141 Q 190.293 201.065 177.1062 201.065 L 159.5238 201.065 Q 146.337 201.065 152.9304 190.4141 Z" data-bx-shape="triangle 146.337 165.562 43.956 35.503 0.5 0.3 1@ba553c6e" style="stroke: rgb(0, 0, 0);" transform="matrix(0, 1, -1, 0, 393.847491, 57.217509)"></path>
+                    <path d="M -174.9084 -274.8521 Q -168.315 -285.503 -161.7216 -274.8521 L -152.9304 -260.6509 Q -146.337 -250 -159.5238 -250 L -177.1062 -250 Q -190.293 -250 -183.6996 -260.6509 Z" data-bx-shape="triangle -190.293 -285.503 43.956 35.503 0.5 0.3 1@378862c4" style="stroke: rgb(0, 0, 0);" transform="matrix(0, -1, 1, 0, 393.847491, 57.217509)"></path>
+                </svg></div>
+            </div>
             <div class="tools bot"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>
                 <div id="clear" class="button">clear</div>
                 <input id="urlin" type="text" placeholder="enter a url bg..." onchange="canvas.loadImg($(this)[0].value)"/>
@@ -60,9 +78,6 @@
                     <input id="pdfpr" type="hidden" name="replace" value="a"/>
                     <input id="pdfb" type="button">
                 </form>
-            </div>
-            <div class="tools left">
-                <div id="b2" class="button">button</div>
             </div>
         </div>
         <div id="users">
