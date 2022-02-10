@@ -12,11 +12,13 @@ var mouse_state;
 var last_transform;
 
 canvas.canUndo = true;
+canvas.loading = false;
 
 canvas.loadImg = (url, callback) => {
     if(userHasAuth()) {
         var image = new Image();
-        image.onload = function (){
+        image.onload = function () {
+            callback();
             canvas.sendCanvas(image.width, image.height, image.src);
         };
         image.onerror = function(err) { console.log( err)};
@@ -52,26 +54,39 @@ canvas.setCanvas = (cdata, reset, callback) => {
 canvas.receiveUndo = (didUndo) => {
     canvas.canUndo = didUndo;
 }
-var csx, csy;
+var csx = 0, csy = 0;
 var operation = [];
-$('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewheel keydown",function(evt){
+canvas.shift = -1;
 
+var render_bezier = true;
+var bezier_buffer = [];
+var bezier_points = [];
+var bezier_step = 50;
+var bezier_throttle = 5;
+var b_count = 0;
+var b_type = 'line';
+var last_bez = 0;
+
+$('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewheel keydown keyup",function(evt){
+
+    if(canvas.loading) {
+        return;
+    }
     var cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;
     cx /= canvas.scale;
     var cy = evt.pageY - $("#canvas").offset().top + $('#scroll_field')[0].scrollTop;
     cy /= canvas.scale;
 
+    
+
     switch(evt.type) {
         
         case 'touchmove':
-            //evt.preventDefault();
         case 'mousemove':
             {
-                csx = cx;
-                csy = cy;
 
                 if(mouse_state && evt.target == canvas) {
-                    if(evt.shiftKey || evt.buttons == 4) {
+                    if((evt.shiftKey || evt.buttons == 4) && !mouse_state.drawing) {
             
                         //move event
                         canvas.position.x += (cx - last_transform.x);
@@ -79,40 +94,113 @@ $('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewhe
             
                     }
                     else {
-            
+                        
                         //draw event
-                        const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y}, 'new': {x: cx, y: cy}, 'id': getMe().id, 'brush': getMe().brush}};
-                        operation.push(messageBody);
-                        canvas.draw(messageBody.data);
-                        wsend(JSON.stringify(messageBody));
+                        mouse_state.drawing = true;
+                        if(canvas.shift == 1) {
+                            cx = csx;
+                        } else
+                        if(canvas.shift == 0) {
+                            cy = csy;
+                        } else {
+                            //bezier curve
+                            b_count++;
+                            if(render_bezier) {
+                                if(last_bez = 0) {
+                                    last_bez = {x: cx, y: cy};
+                                }
+                                if(bezier_buffer.length == 4) {
+                                    for(let step = 0; step < bezier_step; step++) {
+                                        var t = step/bezier_step;
+                                        var bx =    Math.pow((1 - t), 3)*bezier_buffer[0].x
+                                                    + (3*t*Math.pow((1-t), 2))*bezier_buffer[1].x
+                                                    + (3*t*t*(1-t))*bezier_buffer[2].x
+                                                    + (t**3)*bezier_buffer[3].x;
+    
+                                        var by =    Math.pow((1 - t), 3)*bezier_buffer[0].y
+                                                    + (3*t*Math.pow((1-t), 2))*bezier_buffer[1].y
+                                                    + (3*t*t*(1-t))*bezier_buffer[2].y
+                                                    + (t**3)*bezier_buffer[3].y;
+                                        bezier_points.push({x: bx, y: by});
+                                        var x1 = last_bez.x;
+                                        var y1 = last_bez.y;
+                                        var x2 = bx * 1;
+                                        var y2 = by * 1;
 
+                                        if(b_type == 'point') {
+                                            var db = {'type': 'draw', 'data': {x: bx, y: by, 'id': getMe().id, 'brush': getMe().brush, 'type':'point'}}
+                                            canvas.drawPoint(db.data)
+                                            //canvas.draw(db.data)
+                                            operation.push(db);
+                                            wsend(JSON.stringify(db))
+                                        } else {
+                                            var db = {'type': 'draw', 'data': {'last': {x: x1, y: y1}, 'new': {x: x2, y: y2}, 'id': getMe().id, 'brush': getMe().brush}};
+                                            canvas.draw(db.data)
+                                            operation.push(db);
+                                            wsend(JSON.stringify(db))
+                                        }
+                                        last_bez = {x: bx, y: by};
+                                        
+                                        /*
+                                        if(step > 0) {
+                                            var x1 = bezier_points[bezier_points.length-1].x;
+                                            var y1 = bezier_points[bezier_points.length-1].y;
+                                            var x2 = bezier_points[bezier_points.length-2].x;
+                                            var y2 = bezier_points[bezier_points.length-2].y;
+                                            var db = {'type': 'draw', 'data': {'last': {x: x1, y: y1}, 'new': {x: x2, y: y2}, 'id': getMe().id, 'brush': getMe().brush}};
+                                            console.log("distance: "+ Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2)))
+                                            console.log("slope: " + (y2 - y1)/(x2 - x1));
+                                            canvas.draw(db.data)
+                                            operation.push(db);
+                                            wsend(JSON.stringify(db))
+                                        }*/
+                                    }
+                                    // for(op of bezier_points) {
+                                    //     canvas.draw(op.data)
+                                    // }
+                                    last_point = bezier_points[bezier_points.length-1];
+                                    bezier_buffer = [];
+                                    bezier_buffer.push(last_point);
+                                    bezier_points = [];
+                                } else {
+                                    if((b_count % bezier_throttle == 0)) {
+                                        bezier_buffer.push({x: cx, y: cy})
+                                        //canvas.drawPoint({x: cx, y: cy, 'brush': {'color': 'red'}})
+                                    }
+                                }
+                                
+                            } else {
+                                const messageBody = {'type': 'draw', 'data': {'last': {x: lastpos.x, y: lastpos.y}, 'new': {x: cx, y: cy}, 'id': getMe().id, 'brush': getMe().brush}};
+                                operation.push(messageBody);
+                                canvas.draw(messageBody.data);
+                                wsend(JSON.stringify(messageBody));
+                            }
+                        }
                     }
                 } else {
                     last_transform = {x: (cx), y: (cy)};
                 }
-                setTimeout(function(){lastpos = {x: (cx), y: (cy)}}, 10);
+                setTimeout(function(){lastpos = {x: (cx), y: (cy)}}, 0);
             }
         break;
         case 'touchstart':
-            //evt.preventDefault();
         case 'mousedown':
             {
-                
                 operation = [];
                 evt.mdown = true;
                 mouse_state = evt;
             }
         break;
         case 'touchend' :
-            //evt.preventDefault();
         case 'mouseup' :
             {
+                b_count = 0;
+                bezier_buffer = [];
                 mouse_state = null;
                 if(operation.length > 0) {
                     wsend(JSON.stringify({'type': 'bulkdraw', 'data': {operation}}));
                     canvas.canUndo = true;
                 }
-                    
             }
         break;
         case 'mousewheel' :
@@ -131,8 +219,22 @@ $('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewhe
                     evt.preventDefault();
                     wsend(JSON.stringify({'type':'op', 'data':{'type':'userundo'}}));
                 }
+                if(evt.shiftKey && canvas.shift == -1) {
+                    canvas.shift = (Math.abs(lastpos.x - csx) < Math.abs(lastpos.y - csy)) ? 1 : 0;
+                    csx = lastpos.x;
+                    csy = lastpos.y;
+                }
+                if(evt.key == 'x') {
+                    render_bezier = !render_bezier;
+                }
             }
         break;
+        case 'keyup': {
+            if(canvas.shift >= 0) {
+                canvas.shift = -1;
+            }
+            break;
+        }
     }
     canvas.setTransform();
 }); 
@@ -190,14 +292,20 @@ window.addEventListener('keydown', function(e) {
 });
 */
 canvas.draw = function(pos) {
-  if (canvas.getContext) {
-      var ctx = canvas.getContext('2d');
-      ctx.lineWidth = pos.brush.scaleWithCanvas ? pos.brush.radius/canvas.scale : pos.brush.radius;
-      ctx.beginPath();
-      ctx.moveTo(pos.last.x, pos.last.y)
-      ctx.strokeStyle = pos.brush.color;
-      ctx.lineTo(pos.new.x, pos.new.y);
-      ctx.stroke();
+  if (canvas.getContext && !canvas.loading) {
+    if(pos.type == 'point') {
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = pos.brush.color;
+        ctx.fillRect(pos.x, pos.y, 10, 10);
+    } else {
+        var ctx = canvas.getContext('2d');
+        ctx.lineWidth = pos.brush.scaleWithCanvas ? pos.brush.radius/canvas.scale : pos.brush.radius;
+        ctx.beginPath();
+        ctx.moveTo(pos.last.x, pos.last.y)
+        ctx.strokeStyle = pos.brush.color;
+        ctx.lineTo(pos.new.x, pos.new.y);
+        ctx.stroke();
+    }
   }
 }
 canvas.drawMany = (data) => {
@@ -205,3 +313,10 @@ canvas.drawMany = (data) => {
         canvas.draw(op.data);
     }
 }
+canvas.drawPoint = function(pos) {
+    if (canvas.getContext && !canvas.loading) {
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = pos.brush.color;
+        ctx.fillRect(pos.x, pos.y, 10, 10);
+    }
+  }

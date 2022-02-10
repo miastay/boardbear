@@ -82,6 +82,7 @@ jQuery.easing.def = "easeInOutCirc";
                 elems.join.sub.addClass('good');
                 elems.join.enter.text(`join "${board.name}"`);
                 elems.join.enter.slideDown();
+                elems.join.enter.focus();
                 break;
             }
             case State.showJoinFail: {
@@ -166,3 +167,8 @@ jQuery.easing.def = "easeInOutCirc";
                 break;
         }
     });
+/*
+*/
+joinBoard({'port': 8091}, function() {
+    setTimeout(function(){setState(State.hideAll); document.resetZoom();}, 0);
+})

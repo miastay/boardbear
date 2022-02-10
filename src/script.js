@@ -5,9 +5,9 @@ var randomColor = () => {
   return 'rgb(' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ', ' + Number.parseInt((Math.random()*100) + 155) + ')';
   //return 'hsl(' + Number.parseInt(Math.random()*360) + ', ' + Number.parseInt((Math.random()*40) + 60) + ', ' + Number.parseInt((Math.random()*40) + 60) + ')';
 }
+function formatBytes(a,b=2,k=1024){with(Math){let d=floor(log(a)/log(k));return 0==a?"0 Bytes":parseFloat((a/pow(k,d)).toFixed(max(0,b)))+" "+["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"][d]}}
 
 function wsend(msg) {
-  console.log(msg)
   if(ws && ws.readyState == 1) {
     sendTime = Date.now();
     return ws.send(msg);
@@ -41,9 +41,26 @@ function advJSONParse(jstr) {
   return json;
 }
 
-function toggleLoading(elem) {
-  $(elem).toggleClass('loading');
+
+function toggleAlert(message) {
+  $("#alert").text(message);
+  $("#alert").slideToggle();
 }
+function createError(message) {
+  $("#error").text(message);
+  $("#error").slideDown();
+  setTimeout(function() {
+    $("#error").slideUp();
+  }, 4500);
+}
+
+
+function toggleLoading() {
+  $("#canvas").toggleClass('loading');
+  canvas.loading = !canvas.loading;
+  toggleAlert("loading canvas image...")
+}
+
 
 document.resetZoom = () => {
   document.body.style.zoom = 1;
@@ -366,14 +383,24 @@ var users = []
       e.preventDefault();
       var t = Date.now();
       console.log("started getting")
-      //toggleLoading($("#scroll_field"));
-      return fetch("/", {body: new FormData($("#pdfpost")[0]), method: "POST"})
+      var body = new FormData($("#pdfpost")[0]);
+      console.log(body.getAll('ffupload')[0].size)
+      if(body.getAll('ffupload')[0].size > 5000000) {
+        return createError(`file is too large (5mb max, uploaded ${formatBytes(body.getAll('ffupload')[0].size)})`);
+      }
+      toggleLoading();
+      return fetch("/", {body, method: "POST"})
       .then(response => response.json())
       .then(data => {
-        console.log(data)
-        canvas.loadImg(data.url); 
-        $("#pdfpr")[0].value = data.url; 
-        console.log("took " + (Date.now() - t) + " ms");
+        if(!data) {
+          toggleLoading();
+          return createError("could not load file.");
+        }
+        canvas.loadImg(data.url, function() {
+          $("#pdfpr")[0].value = data.url; 
+          toggleLoading();
+          console.log("took " + (Date.now() - t) + " ms");
+        }); 
       });
     }
 

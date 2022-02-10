@@ -33,7 +33,7 @@
                                     <input id="jsc4" type="number" class="code entry"/>
                                     <input id="jsc5" type="number" class="code entry"/>
                                 </div>
-                                <div id="join_enter" class="item transparent bot button enabled hide fnav">enter</div>
+                                <button id="join_enter" type="button" class="item transparent bot button enabled hide fnav" value="enter"></button>
                             </div>
                             <div id="join_back" class="item bot button enabled hide bnav">back</div>
                         </div>
@@ -47,6 +47,8 @@
                     </div>
                 </div>
             </div>
+            <div id="loader" class="loading"></div>
+            <div id="alert" class="item"></div><div id="error" class="item"></div>
             <div id="scroll_field" class="field"><canvas id="canvas" width="500" height="500"></canvas></div>
             <div class="tools"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>
                 <div id="clear" class="button">clear</div>

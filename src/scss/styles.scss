@@ -10,6 +10,10 @@
     background: linear-gradient(0deg, $state 0%, $state 100%) 0% 0%;
     background-size: 100% !important;
 }
+@mixin bad {
+    background-color: $bad !important;
+    color: rgb(95, 26, 26) !important;
+}
 $nz: calc(1vw + 1vh);
 $good: rgb(158, 255, 162);
 $bad: rgb(255, 173, 158);
@@ -52,8 +56,8 @@ div {
     border-radius: var(--border-round);
 }
 #main {
-    width: 90vw;
-    height: 90vh;
+    width: 100vw;
+    height: 100%;
 }
 #canvas {
     $canvas-scale: 1;
@@ -62,6 +66,42 @@ div {
     box-shadow: 0 0 5% rgba(0, 0, 0, 0.4);
     //background-size: cover;
     background-attachment: local;
+    opacity: 1;
+    filter: blur(0px);
+    transition: filter 1s ease, opacity 1s ease;
+}
+.loading {
+    opacity: 0.5 !important;
+    filter: blur(100px) !important;
+}
+#alert {
+    position: absolute;
+    top: 5vh;
+    display: none;
+    transform: translateX(50%);
+    &.item {
+        padding: 1vw;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 1);
+        font-size: calc($nz * 0.9);
+        padding: calc($nz * 0.9);
+        line-height: 200%;
+    }
+}
+#error {
+    position: absolute;
+    top: 5vh;
+    display: none;
+    transform: translateX(50%);
+    z-index: 200;
+    &.item {
+        @include bad;
+        padding: 1vw;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        font-size: calc($nz * 0.7);
+        padding: calc($nz * 0.9);
+        line-height: 200%;
+    }
 }
 #users {
     width: 300px;
@@ -96,11 +136,20 @@ div {
     background: white;
 }
 .tools {
-    position: absolute;
+    position: sticky;
     left: 0;
     bottom: 0;
     width: 100%;
     padding: 1.5vw;
+    max-height: 10vh;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(200px);
+    & * {
+        display: inline-block !important;
+    }
+    & #clear {
+        padding: 1.5vw;
+    }
 }
 .tooltip {
     visibility: hidden;
@@ -152,10 +201,6 @@ div {
 }
 .button.disabled:hover {
     cursor: not-allowed;
-}
-#clear {
-    width: 90px;
-    padding: 1.5vw;
 }
 .owner {
     color: rgb(255, 174, 0);
@@ -222,16 +267,43 @@ div {
 }
 
 .field {
-    width: 90vw;
-    height: 85vh;
+    width: 100%;
+    height: 100%;
     //overflow-x: scroll;
     overflow: hidden;
     border: solid black 1px;
     background:rgb(71, 71, 71);
-    .loading {
-        filter: brightness(0.1);
-    }
+    
 }
+/*
+.loading {
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    &::before {
+        color: white;
+        position: absolute;
+        transform: translateY(20vh) translateX(40vw);
+        content: '↺';
+        font-size: 20vw;
+        animation: loader 3s ease-in-out infinite;
+    }
+    & * {
+        display: none !important;
+    }
+    position: absolute;
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    @keyframes loader {
+        0% {
+            transform: translateY(20vh) translateX(40vw) rotate(360deg);
+        }
+        100% {
+            transform: translateY(20vh) translateX(40vw) rotate(0deg);
+        }
+    }
+}*/
 
 .pop {
     width: 100%;
