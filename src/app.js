@@ -64,16 +64,16 @@ function appRun() {
     }
 
     function cleanDirs() {
-        fs.rmdir('./upload', function() {
-            fs.mkdir('./upload', function() { "created upload dir" })
+        fs.rmdir('./upload', { recursive: true, force: true }, function(err) {
+            if(err) { console.log(err) }
+            fs.mkdir('./upload', function() { console.log("created upload dir") })
         })
-        fs.rmdir('./static/uploads', function() {
-            fs.mkdir('./static/uploads', function() { "created static uploads dir" })
+        fs.rmdir('./static/uploads', { recursive: true, force: true }, function(err) {
+            if(err) { console.log(err) }
+            fs.mkdir('./static/uploads', function() { console.log("created static uploads dir") })
         })
     }
     cleanDirs();
-
-
 
     /*      board storage & logic
     */
@@ -107,7 +107,7 @@ function appRun() {
             return;
         }
         const options = {
-            root: './'
+            root: './static/'
         }
         res.sendFile('home.html', options)
     })
@@ -164,6 +164,13 @@ function appRun() {
         }
         res.sendFile('script.js', options)
     })
+    app.get('/paper.js', (req, res) => {
+        const options = {
+            root: "/home/ec2-user/WebApp/boardbear/node_modules/paper/dist/"
+        }
+        res.sendFile('paper-full.js', options)
+    })
+    
     app.get('/boardbear.css', (req, res) => {
         const options = {
             root: './'
