@@ -357,7 +357,7 @@ ptools.setActiveTool(ptools.move);
 
 ptools.brush.minDistance = 5;
 ptools.brush.on('mousedrag', function(event) {
-        path = operations[operations.length-1];
+        path = canvas.operations[canvas.operations.length-1];
         path.strokeColor = 'red';
         //path.moveTo(new Point(cx, cy));
         var point = canvas.changeBasis(event.event.pageX, event.event.pageY);
@@ -371,11 +371,11 @@ ptools.brush.on('mousemove', function(event) {
     view.draw();
 });
 ptools.brush.on('mouseup', function(event) {
-    console.log(operations[operations.length-1])
+    console.log(canvas.operations[canvas.operations.length-1])
 }); 
 ptools.brush.on('mousedown', function(event) {
     path = new Path();
-    operations.push(path);
+    canvas.operations.push(path);
 });
 
 

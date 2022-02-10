@@ -51,7 +51,7 @@
             <div id="loader" class="loading"></div>
             <div id="alert" class="item"></div><div id="error" class="item"></div>
             <div id="scroll_field" class="field"><canvas id="canvas" width="500" height="500"></canvas></div>
-            <div class="tools"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>
+            <div class="tools bot"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>
                 <div id="clear" class="button">clear</div>
                 <input id="urlin" type="text" placeholder="enter a url bg..." onchange="canvas.loadImg($(this)[0].value)"/>
                 <form id="pdfpost" action="/" method="post" enctype="multipart/form-data">
@@ -60,6 +60,9 @@
                     <input id="pdfpr" type="hidden" name="replace" value="a"/>
                     <input id="pdfb" type="button">
                 </form>
+            </div>
+            <div class="tools left">
+                <div id="b2" class="button">button</div>
             </div>
         </div>
         <div id="users">

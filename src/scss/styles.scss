@@ -138,15 +138,25 @@ div {
 .tools {
     position: sticky;
     left: 0;
-    bottom: 0;
-    width: 100%;
+    &.bot {
+        bottom: 0;
+        width: 100%;
+        max-height: 10vh;
+        & * {
+            display: inline-block !important;
+        }
+    }
+    &.left {
+        top: 0;
+        width: 10%;
+        & * {
+            // display: block !important;
+        }
+    }
     padding: 1.5vw;
-    max-height: 10vh;
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(200px);
-    & * {
-        display: inline-block !important;
-    }
+    
     & #clear {
         padding: 1.5vw;
     }
