@@ -18,6 +18,13 @@ $nz: calc(1vw + 1vh);
 $good: rgb(158, 255, 162);
 $bad: rgb(255, 173, 158);
 
+@function s($mult) {
+    @return calc($mult * var(--su));
+}
+@function m($base, $mult) {
+    @return calc($base * $mult);
+}
+
 
 * {
     user-select: none;
@@ -42,6 +49,7 @@ $bad: rgb(255, 173, 158);
     --mouse-y: 0;
     --border-round: 15px;
     --pulse-width: 15;
+    --su: calc(1vw + 1vh);
 }
 html {
     @media only screen and (max-width: 700px) {
@@ -149,12 +157,12 @@ div {
         }
     }
     &.left {
-        $width: 5.5vw;
-        $pad: $width/8;
+        $width: s(2);
+        $pad: s(0.25);
         position: absolute;
         top: 10%;
         left: 1.5vw;
-        max-width: $width;
+        width: $width;
         margin: 0;
         height: 60vh;
         padding: $pad;
@@ -186,16 +194,17 @@ div {
             //     background-size: 65% 65% !important;
             // }
         }
-    }
-    
-    svg {
-        &.move {
-            height: 2.5vw !important;
-            width: 2.5vw !important;
-            padding: 0;
-            margin: 0;
+        
+        svg {
+            &.move {
+                width: m($width, 0.5);
+                height: m($width, 0.5);
+                padding: 0;
+                margin: 0;
+            }
         }
     }
+    
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(200px);
     

@@ -49,10 +49,6 @@ var getUserEditBox = (user) => {
     return div;
 }
 
-var setResponseTime = (ms) => {
-    $("#resp").text(`${ms}ms`);
-}
-
 const userHasAuth = () => { return myUser.auth == "owner"; }
 var sendBrush = (brush) => { wsend(JSON.stringify({ 'type': 'op', 'data': { 'type': 'userbrush', 'data': { brush } } })) }
 var receiveBrush = (brush) => { console.log(brush); myUser.brush = brush; }

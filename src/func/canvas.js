@@ -15,6 +15,13 @@ var mouse_state;
 
 canvas.canUndo = true;
 canvas.loading = false;
+canvas.response_time = Number.MAX_SAFE_INTEGER;
+canvas.min_response = Number.MAX_SAFE_INTEGER;
+canvas.name = "";
+
+canvas.setInfo = (text) => {
+    $("#info").text(text);
+}
 
 canvas.loadImg = (url, callback) => {
     if(userHasAuth()) {
@@ -290,61 +297,53 @@ canvas.changeBasis = (x, y) => {
 
 var cx = 0; var cy = 0;
 
-
 paper.tools = {
     'default' : new Tool(),
     'move' : new Tool(),
     'brush' : new Tool()
 }
 var ptools = paper.tools;
+ptools.arr = [ptools['default'], ptools['move'], ptools['brush']]
 ptools.setActiveTool = function(tool) {
     tool.activate();
     return ptools.activeTool = tool;
 }
 
 $('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewheel keydown keyup",function(evt){
-        if((ptools.activeTool == ptools.move && evt.type == 'mousedrag') || evt.buttons == 4) {
-            console.log(cx, last_transform.x)
+        
+        if((ptools.activeTool == ptools.move && ptools.move.drag) || evt.buttons == 4) {
             canvas.position.x += (cx - last_transform.x);
             canvas.position.y += (cy - last_transform.y);
-            canvas.setTransform();
         }
         if(evt.type == 'mousewheel') {
             canvas.scale += (-0.1 * (canvas.scale/2) * (evt.originalEvent.deltaY)/Math.abs((evt.originalEvent.deltaY)));
             canvas.scale = Math.min(10, Math.max(0.05, canvas.scale));
-            canvas.setTransform();
-        }
-        cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;
-        cx /= canvas.scale;
-        cy = evt.pageY - $("#canvas").offset().top + $('#scroll_field')[0].scrollTop;
-        cy /= canvas.scale;
-        if(evt.shiftKey) {
-            ptools.setActiveTool(ptools.brush);
-        }
-        if(evt.ctrlKey) {
-            ptools.setActiveTool(ptools.move);
         }
         if(!ptools.move.mouse_state) {
             last_transform = {x: (cx), y: (cy)};
         }
-        
+        if(evt.key && evt.type == "keyup") {
+            ptools.setActiveTool(ptools.arr.filter(x => x.key == evt.key)[0])
+        }
+        canvas.setTransform();
+        cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;
+        cx /= canvas.scale;
+        cy = evt.pageY - $("#canvas").offset().top + $('#scroll_field')[0].scrollTop;
+        cy /= canvas.scale;
         
 });
 
 /*      Move Tool
 */
 
+ptools.move.minDistance = 1;
+ptools.move.key = "m";
 ptools.move.on('mousedrag', function(event) {
-    console.log(cx, last_transform.x)
-    canvas.position.x += (cx - last_transform.x);
-    canvas.position.y += (cy - last_transform.y);
-    canvas.setTransform();
-});
-ptools.move.on('mousemove', function(event) {
-    
+    ptools.move.drag = true;
 });
 ptools.move.on('mouseup', function(event) {
     ptools.move.mouse_state = false;
+    ptools.move.drag = false;
 }); 
 ptools.move.on('mousedown', function(event) {
     ptools.move.mouse_state = true;
@@ -356,6 +355,7 @@ ptools.setActiveTool(ptools.move);
 */
 
 ptools.brush.minDistance = 5;
+ptools.brush.key = "b";
 ptools.brush.on('mousedrag', function(event) {
         path = canvas.operations[canvas.operations.length-1];
         path.strokeColor = 'red';
@@ -378,16 +378,13 @@ ptools.brush.on('mousedown', function(event) {
     canvas.operations.push(path);
 });
 
-
-
-
-
-
-
-
-
-
-
+canvas.tick = (n = 0) => {
+    canvas.connect_time = Number.parseInt(n*0.015)
+    canvas.setInfo(`${canvas.name} (${canvas.response_time}ms)`);
+    canvas.min_response = Math.min(canvas.min_response, canvas.response_time)
+    setTimeout(function(){return canvas.tick(n+1)}, 15);
+}
+canvas.tick();
 
 
 /*

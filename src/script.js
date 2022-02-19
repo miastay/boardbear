@@ -269,7 +269,7 @@ var users = []
     ws.addEventListener("message", ({ data }) => {
 
       receiveTime = Date.now();
-      setResponseTime(receiveTime - sendTime);
+      canvas.response_time = receiveTime - sendTime;
 
       if(data instanceof Blob) {
         try {
@@ -288,7 +288,6 @@ var users = []
           case 'auth': {
             id = data.data.id;
             auth = data.data.auth;
-            document.getElementById("id").innerText = data.data.auth + "_" + data.data.id
             break;
           }
 
