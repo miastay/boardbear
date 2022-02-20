@@ -9,7 +9,7 @@ jQuery.easing.def = "easeInOutCirc";
         'hideJoin': 2,
         'hideCreate': 3,
         'showJoinEnter': 4,
-        'showJoinEnter': 5,
+        'showJoinFail': 5,
         'hideJoinEnter': 6,
         'hideAll': 10,
         'none': -1
@@ -29,6 +29,7 @@ jQuery.easing.def = "easeInOutCirc";
             'button': $("#create_button"),
             'sub': $("#create_sub"),
             'back': $("#create_back"),
+            'enter': $("#create_enter"),
             'all': $("#L_create").find("*")
         }
     }
@@ -69,6 +70,7 @@ jQuery.easing.def = "easeInOutCirc";
             case State.showCreate: {
                 hideFront();
                 elems.create.sub.slideDown();
+                elems.create.enter.text(`create board`);
                 elems.create.back.slideDown();
                 break;
             }
@@ -87,6 +89,7 @@ jQuery.easing.def = "easeInOutCirc";
             }
             case State.showJoinFail: {
                 elems.join.sub.addClass('bad');
+                elems.join.enter.addClass('x');
                 elems.join.enter.text(`couldn't find ${code.join("")}`);
                 elems.join.enter.slideDown();
                 break;
@@ -94,6 +97,7 @@ jQuery.easing.def = "easeInOutCirc";
             case State.hideJoinEnter: {
                 elems.join.sub.removeClass('good');
                 elems.join.sub.removeClass('bad');
+                elems.join.enter.removeClass('x');
                 elems.join.enter.slideUp();
                 break;
             }
@@ -118,25 +122,32 @@ jQuery.easing.def = "easeInOutCirc";
     });
     elems.join.enter.on('click', (event) => {
         //join board here
-        joinBoard(board, function() {
-            setTimeout(function(){setState(State.hideAll); document.resetZoom();}, 0);
-        })
+        if(lastState == State.showJoinEnter) {
+            joinBoard(board, function() {
+                setTimeout(function(){setState(State.hideAll); document.resetZoom();}, 0);
+            })
+        } else {
+            clearCode();
+        }
+        
     });
     elems.create.button.on('click', (event) => {
         setState(State.showCreate);
+    });
+    elems.create.enter.on('click', (event) => {
+        tryCreate({'name': 'noname'}, function(response) {
+            console.log(response);
+        })
     });
     elems.create.back.on('click', (event) => {
         setState(State.hideCreate);
     });
     var code = []; var board = null;
-    $("#join_sub_code").find("*").on('input focus', (event) => {
+    $("#join_sub_code").find("*").on('input focus keydown', (event) => {
         const e = $(event.target);
         const i = $(event.target)[0].id.substring(3);
         if(board) {
-            board = null;
-            code = [];
-            [...$("#join_sub_code").find("*")].forEach(x => x.value = '')
-            setState(State.hideJoinEnter);
+            clearCode();
         }
         switch(event.type) {
             case 'input': {
@@ -162,13 +173,43 @@ jQuery.easing.def = "easeInOutCirc";
                 }
             }
                 break;
+            case 'keydown': {
+                console.log(event)
+                if(event.originalEvent.key === 'Backspace') {
+                    e.prev().focus();
+                }
+                if(event.originalEvent.key === 'Enter') {
+                    $(event.target).blur();
+                    tryCode(code.join(''), function(result) {
+                        board = result.board;
+                        if(result.board) {
+                            setState(State.showJoinEnter);
+                        } else {
+                            setState(State.showJoinFail);
+                            //board = null; 
+                            //code = []; 
+                            //[...$("#join_sub_code").find("*")].forEach(x => x.value = '')
+                        }
+                    });
+                }
+            }   break;
             case 'focus':
                 //e[0].value = '';
                 break;
         }
     });
+    const renderCode = (ecode) => {
+        [...$("#join_sub_code").find("*")].forEach(x => { x.value = ecode[x.id.substring(3)]; code[x.id.substring(3)] = ecode[x.id.substring(3)] } );
+    }
+    const clearCode = () => {
+        board = null;
+        code = [];
+        [...$("#join_sub_code").find("*")].forEach(x => x.value = '')
+        setState(State.hideJoinEnter);
+    }
+
 /*
-*/
 joinBoard({'port': 8091}, function() {
     setTimeout(function(){setState(State.hideAll); document.resetZoom();}, 0);
 })
+*/

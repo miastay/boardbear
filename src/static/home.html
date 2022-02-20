@@ -41,7 +41,10 @@
                             <div id="L_create_front">
                                 <div id="create_button" class="item bot button enabled fnav">create a board</div>
                             </div>
-                            <div id="create_sub" class="item hide">enter code</div>
+                            <div id="create_sub" class="item hide">enter name
+                                <input id="csn" type="text" class="name entry"/>
+                                <button id="create_enter" type="button" class="item transparent bot button enabled fnav" value="create"></button>
+                            </div>
                             <div id="create_back" class="item bot button enabled hide bnav">back</div>
                         </div>
                     </div>
@@ -49,22 +52,58 @@
             </div>
             <div id="loader" class="loading"></div>
             <div id="alert" class="item"></div><div id="error" class="item"></div>
-            <div id="scroll_field" class="field"><canvas id="canvas" width="1350" height="1700"></canvas></div>
-            <div class="tools left">
-                <div id="b2" class="button enabled selected" onclick="ptools.setActiveTool(ptools.move); $(this).addClass('selected')"><svg class="move" viewBox="113.67 170.887 109.29 109.29" width="109.29" height="109.29">
+            <div id="scroll_field" class="field"><canvas id="canvas" width="10000000" height="10000000"></canvas></div>
+            <div id="toolbar_left" class="tools left">
+                <div id="bt_move" class="button enabled selected" onclick="tactiv($(this), ptools.move)">
+                    <svg class="move" viewBox="113.67 170.887 109.29 109.29" width="109.29" height="109.29">
                     <rect x="225.425" y="183.597" width="90" height="6.489" style="stroke: rgb(0, 0, 0); stroke-width: 7px;" transform="matrix(0, 1, -1, 0, 355.086045, -45.425009)"></rect>
                     <path d="M 161.7216 176.2129 Q 168.315 165.562 174.9084 176.2129 L 183.6996 190.4141 Q 190.293 201.065 177.1062 201.065 L 159.5238 201.065 Q 146.337 201.065 152.9304 190.4141 Z" data-bx-shape="triangle 146.337 165.562 43.956 35.503 0.5 0.3 1@ba553c6e" style="stroke: rgb(0, 0, 0);"></path>
                     <path d="M -174.9084 -274.8521 Q -168.315 -285.503 -161.7216 -274.8521 L -152.9304 -260.6509 Q -146.337 -250 -159.5238 -250 L -177.1062 -250 Q -190.293 -250 -183.6996 -260.6509 Z" data-bx-shape="triangle -190.293 -285.503 43.956 35.503 0.5 0.3 1@378862c4" style="stroke: rgb(0, 0, 0);" transform="matrix(-1, 0, 0, -1, 0, 0)"></path>
                     <rect x="225.425" y="183.597" width="90" height="6.489" style="stroke: rgb(0, 0, 0); stroke-width: 7px;" transform="matrix(-1, 0, 0, -1, 439.2725, 412.303554)"></rect>
                     <path d="M 161.7216 176.2129 Q 168.315 165.562 174.9084 176.2129 L 183.6996 190.4141 Q 190.293 201.065 177.1062 201.065 L 159.5238 201.065 Q 146.337 201.065 152.9304 190.4141 Z" data-bx-shape="triangle 146.337 165.562 43.956 35.503 0.5 0.3 1@ba553c6e" style="stroke: rgb(0, 0, 0);" transform="matrix(0, 1, -1, 0, 393.847491, 57.217509)"></path>
                     <path d="M -174.9084 -274.8521 Q -168.315 -285.503 -161.7216 -274.8521 L -152.9304 -260.6509 Q -146.337 -250 -159.5238 -250 L -177.1062 -250 Q -190.293 -250 -183.6996 -260.6509 Z" data-bx-shape="triangle -190.293 -285.503 43.956 35.503 0.5 0.3 1@378862c4" style="stroke: rgb(0, 0, 0);" transform="matrix(0, -1, 1, 0, 393.847491, 57.217509)"></path>
-                </svg></div>
-                <div id="b2" class="button enabled" onclick="ptools.setActiveTool(ptools.brush); $(this).addClass('selected')"><!doctype html>
-                    <svg class="move" viewBox="192.501 197.183 114.953 114.953" width="114.953" height="114.953">
-                    <path d="M -261.379 -257.992 Q -250 -327.427 -238.621 -257.992 L -238.621 -257.992 Q -227.242 -188.556 -250 -188.556 L -250 -188.556 Q -272.758 -188.556 -261.379 -257.992 Z" data-bx-shape="triangle -272.758 -327.427 45.516 138.871 0.5 0.5 1@9390b760" style="stroke-width: 6px;" transform="matrix(-0.707107, -0.707107, 0.707107, -0.707107, 253.278866, -102.195241)"></path>
-                    <path d="M 420.2592 100.82152 Q 433.671 98.632 433.671 100.82152 L 433.671 108.60648 Q 433.671 110.796 420.2592 110.796 L 372.5728 110.796 Q 359.161 110.796 372.5728 108.60648 Z" data-bx-shape="triangle 359.161 98.632 74.51 12.164 1 0.18 1@853cfa04" style="stroke: rgb(0, 0, 0);" transform="matrix(1, -0.000063, 0.000063, 1, -140.325629, 192.160165)"></path>
-                    <path d="M -261.426 -306.771 Q -250 -334.665 -238.574 -306.771 L -238.574 -306.771 Q -227.148 -278.877 -250 -278.877 L -250 -278.877 Q -272.852 -278.877 -261.426 -306.771 Z" data-bx-shape="triangle -272.852 -334.665 45.704 55.788 0.5 0.5 1@ec84ada3" style="stroke-width: 8px;" transform="matrix(-0.707107, -0.707107, 0.707107, -0.707107, 253.278881, -102.195248)"></path>
-                    </svg></div>
+                    </svg>
+                </div>
+                <div id="bt_brush" class="button enabled" onclick="tactiv($(this), ptools.brush)">
+                    <svg viewBox="200.796 182.431 86.429 86.429" width="86.429" height="86.429">
+                    <path d="M 225.916 256.888 L 279.497 256.991 L 279.497 259.961 L 208.191 259.668 Z" style="stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px; fill: rgb(99, 99, 99); fill-rule: nonzero; stroke-opacity: 0.3; fill-opacity: 0; stroke: rgb(102, 102, 102);"></path>
+                    <g transform="matrix(1, 0, 0, 1, -6.638212, 97.411685)" style="opacity: 0.16; visibility: hidden;">
+                        <rect x="207.434" y="85.019" width="86.429" height="86.429" style="stroke-opacity: 0; fill: rgb(255, 0, 0); fill-opacity: 0.56;"></rect>
+                        <path d="M 232.608 153.944 L 286.189 154.217 L 286.189 162.098 L 214.883 161.32 Z" style="stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px; fill: rgb(99, 99, 99); stroke: rgb(102, 102, 102); fill-rule: nonzero; stroke-opacity: 0.3; fill-opacity: 0;"></path>
+                        <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="231.752 153.562 231.941 162.442 222.816 162.123 215.06 154.254" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, -46.262505, 204.31643)"></polygon>
+                        <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="232.608 142.092 245.526 124.148 273.517 95.448 286.189 106.047 257.621 136.005 239.519 148.895 232.608 142.092"></polygon>
+                    </g>
+                    <g transform="matrix(1.115011, 0, 0, 1.115011, -30.495402, 71.924204)" style="">
+                        <rect x="207.434" y="99.108" width="77.514" height="77.514" style="fill-opacity: 0; fill: none; stroke-opacity: 0; stroke: rgb(0, 0, 0);"></rect>
+                        <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="220.365 161.332 220.649 169.531 213.388 165.452" transform="matrix(0.723549, -0.690273, 0.690273, 0.723549, -54.197923, 195.535713)"></polygon>
+                        <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="224.607 154.078 272.731 113.072 228.736 158.128"></polygon>
+                    </g>
+                    </svg>
+                </div>
+                <div id="bt_highlight" class="button enabled" onclick="tactiv($(this), ptools.highlight)">
+                    <svg viewBox="311.732 85.019 86.429 86.429" width="86.429" height="86.429">
+                    <rect x="311.732" y="85.019" width="86.429" height="86.429" style="fill: rgb(216, 216, 216); stroke-opacity: 0; fill-opacity: 0;"></rect>
+                    <path d="M 336.906 153.944 L 390.487 154.217 L 390.487 162.098 L 319.181 161.32 Z" style="stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px; fill: rgb(99, 99, 99); stroke: rgb(102, 102, 102); fill-rule: nonzero; stroke-opacity: 0.3; fill-opacity: 0;"></path>
+                    <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="336.05 153.562 336.239 162.442 327.114 162.123 319.358 154.254" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, -15.714325, 278.066262)"></polygon>
+                    <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="336.906 142.092 349.824 124.148 377.815 95.448 390.487 106.047 361.919 136.005 343.817 148.895 336.906 142.092"></polygon>
+                    </svg>
+                </div>
+                <div id="bt_erase" class="button enabled" onclick="tactiv($(this), ptools.erase)">
+                    <svg viewBox="311.732 182.431 86.429 86.429" width="86.429" height="86.429">
+                    <g transform="matrix(1, 0, 0, 1, 104.297992, 97.411708)" style="opacity: 0.16; visibility: hidden;">
+                        <rect x="207.434" y="85.019" width="86.429" height="86.429" style="stroke-opacity: 0; fill: rgb(255, 0, 0); fill-opacity: 0.56;"></rect>
+                        <path d="M 232.608 153.944 L 286.189 154.217 L 286.189 162.098 L 214.883 161.32 Z" style="stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px; fill: rgb(99, 99, 99); stroke: rgb(102, 102, 102); fill-rule: nonzero; stroke-opacity: 0.3; fill-opacity: 0;"></path>
+                        <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="231.752 153.562 231.941 162.442 222.816 162.123 215.06 154.254" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, -46.262505, 204.31643)"></polygon>
+                        <polygon style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px;" points="232.608 142.092 245.526 124.148 273.517 95.448 286.189 106.047 257.621 136.005 239.519 148.895 232.608 142.092"></polygon>
+                    </g>
+                    <g transform="matrix(1.115011, 0, 0, 1.115011, 80.440806, 71.924227)" style="">
+                        <rect x="207.434" y="99.108" width="77.514" height="77.514" style="fill-opacity: 0; fill: none; stroke: rgb(255, 0, 0); stroke-opacity: 0;"></rect>
+                        <path d="M 215.624 172.453 L 250.104 172.946 L 254.937 165.885 L 277.507 165.885 L 215.624 166.148 L 215.624 172.453 Z" style="stroke-linecap: round; stroke-linejoin: round; stroke-width: 8px; fill: rgb(99, 99, 99); fill-rule: nonzero; stroke-opacity: 0.3; fill-opacity: 0; stroke: rgb(102, 102, 102);" transform="matrix(-1, 0, 0, -1, 493.130981, 334.526001)"></path>
+                        <path style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-width: 0px;" d="M 220.669 97.093 H 236.747 A 6.278 6.278 0 0 1 243.025 103.371 V 125.727 H 214.391 V 103.371 A 6.278 6.278 0 0 1 220.669 97.093 Z" data-bx-shape="rect 214.391 97.093 28.634 28.634 6.278 6.278 0 0 1@83122e09" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 172.759628, -113.49469)"></path>
+                        <path style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-width: 0px;" transform="matrix(-0.707107, -0.707107, 0.707107, -0.707107, 172.759628, -113.49469)" d="M -236.747 -155.975 H -220.669 A 6.278 6.278 0 0 1 -214.391 -149.697 V -127.341 H -243.025 V -149.697 A 6.278 6.278 0 0 1 -236.747 -155.975 Z" data-bx-shape="rect -243.025 -155.975 28.634 28.634 6.278 6.278 0 0 1@4f61e445"></path>
+                    </g>
+                    </svg>
+                </div>
             </div>
             <div class="tools bot"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>
                 <div id="clear" class="button">clear</div>

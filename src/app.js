@@ -43,6 +43,32 @@ Object.defineProperty(global, '__function', {
             return __stack[2].getLineNumber();
         }
 });
+function sfc32(a, b, c, d) {
+    return function() {
+        a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
+        var t = (a + b) | 0;
+        a = b ^ b >>> 9;
+        b = c + (c << 3) | 0;
+        c = (c << 21 | c >>> 11);
+        d = d + 1 | 0;
+        t = t + d | 0;
+        c = c + t | 0;
+        return (t >>> 0) / 4294967296;
+    }
+}
+function intSafev4(ip) {
+    return [...ip.matchAll(/[0-9]{1,3}/g)].join('');
+}
+function getUniqueID(ip) {
+    ip = intSafev4(ip);
+    var seed = ip ^ 0xDEADBEEF;
+    var rand = sfc32(0x9E3779B9, 0x243F6A88, 0xB7E15162, seed);
+    for (var i = 0; i < 20; i++) rand();
+    function s4() {
+        return Math.floor((1 + rand()) * 0x10000).toString(16).substring(1);
+    }
+    return s4() + s4() + '-' + s4();
+};
 
 
 /**
@@ -81,9 +107,11 @@ function appRun() {
         {
             'name': 'default_board',
             'code': '000000',
-            'port': 8091
+            'port': 8091,
+            'creator': 'none'
         }
     ];
+    const MAX_BOARDS = 5;
 
     // matches the following json object:
     // board = {
@@ -94,6 +122,12 @@ function appRun() {
 
     const getBoardByCode = (code) => {
         return boards.find(x => x.code == code);
+    }
+    const generateCode = () => {
+        let seed = "alpha";
+        var rand = sfc32(0x9E3779B9, 0x243F6A88, 0xB7E15162, seed);
+        for (var i = 0; i < boards.length; i++) rand();
+        return Math.floor((1 + rand()) * 0x10000);
     }
 
     var savedFiles = [];
@@ -157,6 +191,27 @@ function appRun() {
         if(codein && board) {
         }
         res.json({'board': board})
+    })
+    app.post('/create', function(req, res){
+        let rp = {'status': '0'};
+        if(boards.filter(x => x.creator == getUniqueID(req.socket.remoteAddress)).length > 0
+            || boards.length+1 >= MAX_BOARDS) {
+            rp.result = false;
+            rp.status = 'duplicate';
+        } else {
+            rp.result = true;
+            rp.code = generateCode();
+            rp.port = 8091+boards.length
+            rp.status = 'created';
+            boards.push({
+                'name': 'new_board',
+                'code': rp.code,
+                'port': rp.port,
+                'creator': getUniqueID(req.socket.remoteAddress)
+            });
+            socketRun(rp.port);
+        }
+        res.json({'res': rp});
     })
     app.get('/boardbear.js', (req, res) => {
         const options = {
@@ -230,7 +285,7 @@ function appRun() {
 
 *///////////
 
-function socketRun() {
+function socketRun(s_port) {
 
     console.log = (msg) => {
         console.debug("[ socket->" + (__function) + " @ " + new Date().toLocaleString() + "]: ", msg)
@@ -239,7 +294,7 @@ function socketRun() {
     const WebSocket = require('ws')
     const http = require('http');
     
-    const wss = new WebSocket.Server({ port: 8091 });
+    const wss = new WebSocket.Server({ port: s_port });
 
     wss.canvas = {
         'image': [],
@@ -419,7 +474,7 @@ function socketRun() {
          **/
 
 
-        ws.id = wss.getUniqueID(req.socket.remoteAddress);
+        ws.id = getUniqueID(req.socket.remoteAddress);
 
         //if this IP is already registered, don't allow it
         var dup = wss.regids.find(x => x == ws.id)
@@ -441,37 +496,11 @@ function socketRun() {
         wss.sendAllCanvas()
 
     });
-    function sfc32(a, b, c, d) {
-        return function() {
-        a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
-        var t = (a + b) | 0;
-        a = b ^ b >>> 9;
-        b = c + (c << 3) | 0;
-        c = (c << 21 | c >>> 11);
-        d = d + 1 | 0;
-        t = t + d | 0;
-        c = c + t | 0;
-        return (t >>> 0) / 4294967296;
-        }
-    }
-    function intSafev4(ip) {
-        return [...ip.matchAll(/[0-9]{1,3}/g)].join('');
-    }
-    wss.getUniqueID = function (ip) {
-        ip = intSafev4(ip);
-        var seed = ip ^ 0xDEADBEEF;
-        var rand = sfc32(0x9E3779B9, 0x243F6A88, 0xB7E15162, seed);
-        for (var i = 0; i < 15; i++) rand();
-        function s4() {
-            return Math.floor((1 + rand()) * 0x10000).toString(16).substring(1);
-        }
-        return s4() + s4() + '-' + s4();
-    };
 };
 
 /*
 */
 
-appRun(); socketRun();
+appRun(); socketRun(8091);
 
 

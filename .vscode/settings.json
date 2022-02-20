@@ -1,10 +1,10 @@
 {
     "editor.bracketPairColorization.enabled": true,
     "editor.definitionLinkOpensInPeek": true,
-    "editor.acceptSuggestionOnCommitCharacter": false,
     "editor.acceptSuggestionOnEnter": "off",
-    "editor.quickSuggestionsDelay": 100,
+    "editor.quickSuggestionsDelay": 800,
     "editor.suggest.showDeprecated": false,
     "editor.suggestFontSize": 12,
     "editor.suggestLineHeight": 14,
+    "editor.snippetSuggestions": "top",
 }

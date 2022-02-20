@@ -86,7 +86,25 @@ window.onload = () => {
   errTooltip = document.getElementById("err_tooltip")
   $.getScript("landing.js", function() {
     console.log("loaded landing.js")
+  }).then( function(){
+    if(window.location.hash) {
+      let code = window.location.hash.substring(window.location.hash.indexOf("join")+5)
+      tryCode(code, function(data) { if(data.board) {
+        joinBoard(data.board, function() {
+            setTimeout(function(){setState(State.hideAll); document.resetZoom();}, 0);
+        })
+      } else {
+        //failed to find board with code
+        renderCode(code);
+        setState(State.showJoin);
+        setState(State.showJoinFail);
+      }})
+    }
   });
+  // if()
+  //   joinBoard({'port': 8091}, function() {
+  //     setTimeout(function(){setState(State.hideAll); document.resetZoom();}, 0);
+  //   })
   
   window.onbeforeunload = () => {
     //updates go here before reload
@@ -99,6 +117,12 @@ const tryCode = (code, callback) => {
   fetch(`/join?code=${code}`, {method: "GET"})
     .then(response => response.json())
     .then(data => { console.log(data); callback(data) });
+}
+
+const tryCreate = (data, callback) => {
+  fetch(`/create?data=${JSON.stringify(data)}`, {method: "POST"})
+    .then(response => response.json())
+    .then(data => { callback(data) });
 }
 
 /*  allow for script caching
@@ -157,68 +181,11 @@ const fetchScripts = async () => {
       });
 
     })
-
-    /*
-    $.getScript("canvas.js")
-
-    .done(function( script, textStatus ) {
-      console.log( textStatus && "loaded canvas" );
-    })
-    
-    .then(function() {
-      
-      $.getScript("user.js")
-      
-      .done(function( script, textStatus ) {
-        console.log( textStatus && "loaded user" );
-        resolve();
-
-      })
-      
-      .fail(function( jqxhr, settings, exception ) {
-        console.log("error loading user")
-        reject(exception);
-
-      });
-
-    })
-    
-    .fail(function( jqxhr, settings, exception ) {
-      console.log("error loading canvas")
-      reject(exception);
-
-    });*/
-    
-    // $.getScript("canvas.js")
-    // .done(function( script, textStatus ) {
-    //   console.log( textStatus && "loaded canvas" );
-    //   $.getScript("user.js")
-    //   .done(function( script, textStatus ) {
-    //     console.log( textStatus && "loaded user" );
-    //     resolve();
-    //   })
-    //   .fail(function( jqxhr, settings, exception ) {
-    //     console.log("error loading user")
-    //     reject(exception);
-    //   });
-    // })
-    // .fail(function( jqxhr, settings, exception ) {
-    //   console.log("error loading canvas")
-    //   reject(exception);
-    // });
   });
-    /*
-    $.getScript("canvas.js", function() {
-      console.log("loaded canvas.js")
-      $.getScript("user.js", function() {
-        console.log("loaded user.js")
-        resolve();
-      });
-    });
-  });*/
 }
 
 const joinBoard = async (board, callback) => {
+  console.log(board, "joinboard")
   fetchScripts().then(function() {
     socketStart(board, callback);
   }, function(error) {
@@ -236,7 +203,7 @@ const socketStart = async (board, callback) => {
       let retries = 0;
       while (retries < 50) {
         console.log(`establishing connection... retry #${retries}`);
-        await runSession(serverAddress, callback);
+        await runSession(serverAddress, board, callback);
         await new Promise(r => setTimeout(r, 1000));
         retries++;
       }
@@ -255,7 +222,7 @@ var users = []
   ///////
  ///////
 
-  async function runSession(address, callback) {
+  async function runSession(address, board, callback) {
 
     try {
       ws = new WebSocket(address);
@@ -263,6 +230,7 @@ var users = []
 
     ws.addEventListener("open", () => {
       console.log("connected to server");
+      window.location.hash = `join=${board.code}`;
       sendBrush({'color': randomColor(), 'radius': 5, 'scaleWithCanvas': true});
     });
   
