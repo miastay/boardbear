@@ -314,6 +314,11 @@ ptools.setActiveTool = function(tool) {
     }
     return ptools.activeTool = tool;
 }
+ptools.drawCursor = (tool) => {
+    tool.minDistance = 0;
+    tool.cursor.position = new Point(cx, cy);
+    view.draw();
+}
 
 
 
@@ -344,6 +349,10 @@ $('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewhe
                 return false;
             } break;
 
+            case 'mousemove' : {
+                ptools.drawCursor(ptools.activeTool);
+            } break;
+
             default : {
                 
             }
@@ -369,6 +378,7 @@ let m = ptools.move;
     m.minDistance = 1;
     m.key = "m";
     m.id = "bt_move";
+    m.cursor = new Path.Circle(new Point(cx, cy), 2);
 
 ptools.move.on('mousedrag', function(event) {
     ptools.move.drag = true;
@@ -387,15 +397,16 @@ ptools.setActiveTool(ptools.move);
 */
 
 let b = ptools.brush;
-    b.minDistance = 5;
     b.key = "b";
+    b.cursor = new Path.Circle(new Point(cx, cy), 2);
     b.id = "bt_brush";
     b.strokeColor = 'red';
     b.blendMode = 'normal';
-    b.strokeWidth = 5;
+    b.strokeWidth = 8;
 
 b.on('mousedrag', function(event) {
     if(event.event.buttons == 1) {
+        b.minDistance = 5;
         path = canvas.operations[canvas.operations.length-1];
         path.strokeColor = b.strokeColor;
         path.blendMode = b.blendMode;
@@ -409,12 +420,13 @@ b.on('mousemove', function(event) {
     view.draw();
 });
 b.on('mouseup', function(event) {
+    path = path.reduce();
     console.log(canvas.operations[canvas.operations.length-1])
 }); 
 b.on('mousedown', function(event) {
     if(event.event.buttons == 1) {
         path = new Path();
-        canvas.operations.push(path);
+        canvas.operations.push(path.reduce());
     }
 });
 
@@ -423,8 +435,8 @@ b.on('mousedown', function(event) {
 */
 
 let h = ptools.highlight;
-    h.minDistance = 5;
     h.key = "h";
+    h.cursor = new Path.Circle(new Point(cx, cy), 5);
     h.id = "bt_highlight";
     h.strokeColor = 'yellow';
     h.blendMode = 'darken';
@@ -432,6 +444,7 @@ let h = ptools.highlight;
     h.opacity = 0.3;
 h.on('mousedrag', function(event) {
     if(event.event.buttons == 1) {
+        h.minDistance = 5;
         path = canvas.operations[canvas.operations.length-1];
         path.opacity = h.opacity;
         path.strokeColor = h.strokeColor;
@@ -446,12 +459,13 @@ ptools.highlight.on('mousemove', function(event) {
     view.draw();
 });
 ptools.highlight.on('mouseup', function(event) {
+    path = path.reduce();
     console.log(canvas.operations[canvas.operations.length-1])
 }); 
 ptools.highlight.on('mousedown', function(event) {
     if(event.event.buttons == 1) {
         path = new Path();
-        canvas.operations.push(path);
+        canvas.operations.push(path.reduce());
     }
 });
 
@@ -459,28 +473,30 @@ ptools.highlight.on('mousedown', function(event) {
 */
 
 let e = ptools.erase;
-    e.minDistance = 5;
+    e.minDistance = 0;
     e.key = "e";
+    e.radius = 50;
+    e.cursor = new Path.Circle(new Point(cx, cy), e.radius);
     e.id = "bt_erase";
-    e.strokeWidth = 45;
+    let minp;
+    let segs = [];
 e.on('mousedrag', function(event) {
-    if(event.event.buttons == 1) {
-        path = canvas.operations[canvas.operations.length-1];
-        if(event.)
+    segs = [];
+    for(path of canvas.operations) {
+        if(path.getNearestLocation(new Point(cx, cy))._distance < e.radius) {
+            path.visible = false;
+        }
     }
-        
-});
-e.on('mousemove', function(event) {
-    view.draw();
+    
 });
 e.on('mouseup', function(event) {
-    console.log(canvas.operations[canvas.operations.length-1])
+    console.log(canvas.operations)
+    segs = []; minp = null;
+    view.draw();
 }); 
+
 e.on('mousedown', function(event) {
-    if(event.event.buttons == 1) {
-        path = new Path();
-        canvas.operations.push(path);
-    }
+    
 });
 
 
@@ -550,3 +566,44 @@ window.addEventListener('keydown', function(e) {
     }
 });
 */
+
+// segs = [];
+//     for(path of canvas.operations) {
+//         if(path.getNearestLocation(new Point(cx, cy)) == null) { canvas.operations = canvas.operations.filter(x => x != path); continue; }
+//         let d = path.getNearestLocation(new Point(cx, cy))._distance;
+//         if(d < 50) { 
+//             segs.push(path.getNearestLocation(new Point(cx, cy)));
+//         }
+//     }
+//     if(event.event.buttons == 1) {
+//         /*
+//         for(minp of segs) {
+//             console.log(canvas.operations, "before")
+//             canvas.operations = canvas.operations.filter(x => x != minp);
+//             console.log(canvas.operations, "after")
+//             path = minp;
+//             path_before = path.splitAt(path.getNearestLocation(new Point(cx, cy))._segment1);
+//             if(path_before) {
+//                 path_after = path_before.splitAt(path_before.getNearestLocation(new Point(cx, cy))._segment2);
+//             }
+//             path.strokeColor = 'blue';
+//             //path_before.strokeColor = 'red';
+//             //path_after.strokeColor = 'green';
+//             path_before.visible = false;
+//             if(path != null) { canvas.operations.push(path); }
+//             if(path_after != null) { canvas.operations.push(path_after); }
+//             // path2 = path.splitAt(path.getNearestLocation(new Point(cx, cy))._segment1);
+//             // path3 = path2.splitAt(path.getNearestLocation(new Point(cx, cy))._segment2);
+//             // canvas.operations.push(path3); 
+//             // path2.strokeColor = 'yellow';
+//             // path2.strokeWidth = 500;
+//             // path3.strokeColor = 'green';
+//             console.log(path_before, path, path_after)
+//             //path.visible = false;
+//         }
+//         */
+//        for(curve of segs) {
+//            console.log(curve);
+//            curve.strokeColor = 'green';
+//        }
+//     }
