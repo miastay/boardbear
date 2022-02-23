@@ -455,14 +455,14 @@ h.on('mousedrag', function(event) {
     }
         
 });
-ptools.highlight.on('mousemove', function(event) {
+h.on('mousemove', function(event) {
     view.draw();
 });
-ptools.highlight.on('mouseup', function(event) {
+h.on('mouseup', function(event) {
     path = path.reduce();
     console.log(canvas.operations[canvas.operations.length-1])
 }); 
-ptools.highlight.on('mousedown', function(event) {
+h.on('mousedown', function(event) {
     if(event.event.buttons == 1) {
         path = new Path();
         canvas.operations.push(path.reduce());
@@ -475,7 +475,7 @@ ptools.highlight.on('mousedown', function(event) {
 let e = ptools.erase;
     e.minDistance = 0;
     e.key = "e";
-    e.radius = 50;
+    e.radius = 15;
     e.cursor = new Path.Circle(new Point(cx, cy), e.radius);
     e.id = "bt_erase";
     let minp;
@@ -485,6 +485,7 @@ e.on('mousedrag', function(event) {
     for(path of canvas.operations) {
         if(path.getNearestLocation(new Point(cx, cy))._distance < e.radius) {
             path.visible = false;
+            canvas.operations = canvas.operations.filter(x => x != path);
         }
     }
     

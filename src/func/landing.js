@@ -146,6 +146,9 @@ jQuery.easing.def = "easeInOutCirc";
     $("#join_sub_code").find("*").on('input focus keydown', (event) => {
         const e = $(event.target);
         const i = $(event.target)[0].id.substring(3);
+        if(code.length == 6) {
+            deFocusAndTry(event);
+        }
         if(board) {
             clearCode();
         }
@@ -158,18 +161,7 @@ jQuery.easing.def = "easeInOutCirc";
                 } else if($("#join_sub_code").find("*")[0].value == '') {
                     $("#join_sub_code").find("*")[0].focus();
                 } else {
-                    $(event.target).blur();
-                    tryCode(code.join(''), function(result) {
-                        board = result.board;
-                        if(result.board) {
-                            setState(State.showJoinEnter);
-                        } else {
-                            setState(State.showJoinFail);
-                            //board = null; 
-                            //code = []; 
-                            //[...$("#join_sub_code").find("*")].forEach(x => x.value = '')
-                        }
-                    });
+                    deFocusAndTry(event);
                 }
             }
                 break;
@@ -179,18 +171,7 @@ jQuery.easing.def = "easeInOutCirc";
                     e.prev().focus();
                 }
                 if(event.originalEvent.key === 'Enter') {
-                    $(event.target).blur();
-                    tryCode(code.join(''), function(result) {
-                        board = result.board;
-                        if(result.board) {
-                            setState(State.showJoinEnter);
-                        } else {
-                            setState(State.showJoinFail);
-                            //board = null; 
-                            //code = []; 
-                            //[...$("#join_sub_code").find("*")].forEach(x => x.value = '')
-                        }
-                    });
+                    deFocusAndTry(event);
                 }
             }   break;
             case 'focus':
@@ -206,6 +187,21 @@ jQuery.easing.def = "easeInOutCirc";
         code = [];
         [...$("#join_sub_code").find("*")].forEach(x => x.value = '')
         setState(State.hideJoinEnter);
+    }
+
+    const deFocusAndTry = (event) => {
+        $(event.target).blur();
+        tryCode(code.join(''), function(result) {
+            board = result.board;
+            if(result.board) {
+                setState(State.showJoinEnter);
+            } else {
+                setState(State.showJoinFail);
+                //board = null; 
+                //code = []; 
+                //[...$("#join_sub_code").find("*")].forEach(x => x.value = '')
+            }
+        });
     }
 
 /*
