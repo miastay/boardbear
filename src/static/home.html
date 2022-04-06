@@ -17,6 +17,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Kumbh+Sans"/>
         <link rel="stylesheet" type="text/css" href="styles.css"/>
+        <link rel="stylesheet" type="text/css" href="colors.css"/>
     </head>
     <body>
         <title>boardbear!</title>
@@ -109,6 +110,25 @@
                         <path style="stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-width: 0px;" transform="matrix(-0.707107, -0.707107, 0.707107, -0.707107, 172.759628, -113.49469)" d="M -236.747 -155.975 H -220.669 A 6.278 6.278 0 0 1 -214.391 -149.697 V -127.341 H -243.025 V -149.697 A 6.278 6.278 0 0 1 -236.747 -155.975 Z" data-bx-shape="rect -243.025 -155.975 28.634 28.634 6.278 6.278 0 0 1@4f61e445"></path>
                     </g>
                     </svg>
+                </div>
+                <div id="tool_divider">&nbsp;</div>
+                <div id="bt_color1" class="button enabled" onclick="swcolor(0)">
+                    <svg viewBox="311.732 182.431 100 100" width="100" height="100">
+                    </svg>
+                </div>
+                <div id="bt_color2" class="button enabled" onclick="swcolor(1)">
+                    <svg viewBox="311.732 182.431 100 100" width="100" height="100">
+                    </svg>
+                </div>
+                <div id="colorwheel" class="colorwheel">
+                    <div id="cw_hue" class="colorwheel hue">&nbsp;</div>
+                    <!--<div id="cw_sat" class="colorwheel sat">&nbsp;</div>-->
+                    <div id="cw_light" class="colorwheel light">&nbsp;</div>
+                    <div id="cw_space"></div>
+                    <div id="cw_picker"></div>
+                    <div id="cw_light_slider">
+                        <input id="cw_light_slider_input" class="slider" min="0" max="100" value="100" type="range" oninput="updateCWLight()">
+                    </div>
                 </div>
             </div>
             <div class="tools bot"><div id="err_tooltip" class="tooltip err">only the owner can do this.</div>

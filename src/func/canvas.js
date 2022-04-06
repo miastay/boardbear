@@ -19,6 +19,51 @@ canvas.response_time = Number.MAX_SAFE_INTEGER;
 canvas.min_response = Number.MAX_SAFE_INTEGER;
 canvas.name = "";
 
+
+class ActionStack {
+    ActionStack() {
+        this.actions = [];
+        this.max = 50;
+    }
+    undo() {
+        let action = this.actions.at(-1);
+        return action.backward();
+    }
+    redo() {
+        let action = this.actions.at(0);
+        return action.forward();
+    }
+    push(item) {
+        this.actions.push(item);
+        while(this.actions.length() > this.max) {
+            this.actions.shift();
+        }
+        return item;
+    }
+    empty() {
+        this.actions = [];
+    }
+}
+class UndoAction {
+    UndoAction(tool, forwardFunc, backwardFunc) {
+        this.forward = forwardFunc;
+        this.backward = backwardFunc;
+        this.tool = tool;
+    }
+    backward() {
+        return this.backward();
+    }
+    forward() {
+        return this.forward();
+    }
+    tool() {
+        return this.tool;
+    }
+}
+
+canvas.action_stack = new ActionStack();
+
+
 canvas.setInfo = (text) => {
     $("#info").text(text);
 }
@@ -295,8 +340,6 @@ canvas.changeBasis = (x, y) => {
     return new Point(dx, dy)
 }
 
-var cx = 0; var cy = 0;
-
 paper.tools = {
     'default' : new Tool(),
     'move' : new Tool(),
@@ -305,8 +348,11 @@ paper.tools = {
     'erase': new Tool()
 }
 var ptools = paper.tools;
-ptools.arr = [ptools['default'], ptools['move'], ptools['brush'], ptools['highlight'], ptools['erase']]
+ptools.arr = [ptools['default'], ptools['move'], ptools['brush'], ptools['highlight'], ptools['erase']];
+ptools.colors = ["red", "rgb(0, 255, 255)"];
+ptools.activeColor = ptools.colors[0];
 ptools.setActiveTool = function(tool) {
+    if(!tool) return;
     tool.activate();
     {
         $("#toolbar_left").find("*").removeClass('selected');
@@ -321,21 +367,39 @@ ptools.drawCursor = (tool) => {
 }
 
 
-
+var cx = 0; var cy = 0;
+var mx = 0; var my = 0;
+var last_transform = null;
 $('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewheel keydown keyup contextmenu",function(evt){
         
-        if((ptools.activeTool == ptools.move && ptools.move.drag) || evt.buttons == 2) {
-            canvas.position.x += (cx - last_transform.x);
-            canvas.position.y += (cy - last_transform.y);
+        if(evt.pageX && evt.pageY) {
+            mx = evt.pageX; my = evt.pageY;
+            cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;
+            cx /= canvas.scale;
+            cy = evt.pageY - $("#canvas").offset().top + $('#scroll_field')[0].scrollTop;
+            cy /= canvas.scale;
+            if(last_transform) { ptools.axis = Math.abs(cx - last_transform.x) > Math.abs(cy - last_transform.y) ? 'x' : 'y' };
         }
 
+        if(ptools.revertTemp) {
+            ptools.setActiveTool(ptools.tempTool);
+            ptools.tempTool = null;
+            ptools.revertTemp = false;
+        }
+
+        if(ptools.move.drag) {
+            canvas.position.x += (cx - last_transform.x);
+            canvas.position.y += (cy - last_transform.y);
+        } 
+        //if(evt.type != 'mousemove')
 
         switch(evt.type) {
 
 
             case 'mousewheel' : {
                 canvas.transformOrigin = `center`;
-                canvas.scale += (-0.1 * (canvas.scale/2) * (evt.originalEvent.deltaY)/Math.abs((evt.originalEvent.deltaY)));
+                let diff = (-0.1 * (canvas.scale/2) * (evt.originalEvent.deltaY)/Math.abs((evt.originalEvent.deltaY)));
+                canvas.scale += diff;
                 canvas.scale = Math.min(10, Math.max(0.05, canvas.scale));
             } break;
 
@@ -345,12 +409,34 @@ $('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewhe
                 }
             } break;
 
+            case 'keydown' : {
+                if(evt.shiftKey && ptools.shiftKey == null) {
+                    ptools.shiftKey = new Point(mx, my);
+                }
+            } break;
+
             case 'contextmenu' : {
                 return false;
             } break;
 
             case 'mousemove' : {
-                ptools.drawCursor(ptools.activeTool);
+                //ptools.drawCursor(ptools.activeTool);
+            } break;
+
+            case 'mousedown' : {
+                if(evt.which == 2) {
+                    ptools.move.drag = true;
+                    ptools.tempTool = ptools.activeTool;
+                    ptools.activeTool = ptools.move;
+                }
+            } break;
+
+            case 'mouseup' : {
+                if(evt.which == 2) {
+                    ptools.move.drag = false;
+                    ptools.revertTemp = true;
+                }
+                ptools.shiftKey = null;
             } break;
 
             default : {
@@ -359,15 +445,11 @@ $('body').on("mousedown touchstart mouseup touchend mousemove touchmove mousewhe
 
         }
 
-
-        if(!ptools.move.mouse_state ) {
+        if(!ptools.move.drag) {
             last_transform = {x: (cx), y: (cy)};
         }
         canvas.setTransform();
-        cx = evt.pageX - $("#canvas").offset().left + $('#scroll_field')[0].scrollLeft;
-        cx /= canvas.scale;
-        cy = evt.pageY - $("#canvas").offset().top + $('#scroll_field')[0].scrollTop;
-        cy /= canvas.scale;
+        
         
 });
 
@@ -380,17 +462,15 @@ let m = ptools.move;
     m.id = "bt_move";
     m.cursor = new Path.Circle(new Point(cx, cy), 2);
 
-ptools.move.on('mousedrag', function(event) {
-    ptools.move.drag = true;
+m.on('mousedrag', function(event) {
 });
-ptools.move.on('mouseup', function(event) {
-    ptools.move.mouse_state = false;
-    ptools.move.drag = false;
+m.on('mouseup', function(event) {
+    m.mouse_state = false;
 }); 
-ptools.move.on('mousedown', function(event) {
-    ptools.move.mouse_state = true;
+m.on('mousedown', function(event) {
+    m.mouse_state = true;
 });
-ptools.setActiveTool(ptools.move);
+ptools.setActiveTool(m);
 
 
 /*      Brush Tool
@@ -400,19 +480,28 @@ let b = ptools.brush;
     b.key = "b";
     b.cursor = new Path.Circle(new Point(cx, cy), 2);
     b.id = "bt_brush";
-    b.strokeColor = 'red';
+    b.strokeColor = ptools.activeColor;
     b.blendMode = 'normal';
     b.strokeWidth = 8;
+    b.simplify = true;
+    b.simplifyTolerance = 5;
+    var path = null;
 
 b.on('mousedrag', function(event) {
-    if(event.event.buttons == 1) {
+    if(ptools.revertTemp || !path) return;
+    if(event.event.button == 0) {
+        console.log(event)
         b.minDistance = 5;
-        path = canvas.operations[canvas.operations.length-1];
-        path.strokeColor = b.strokeColor;
+        path.strokeColor = ptools.activeColor;
         path.blendMode = b.blendMode;
         path.strokeWidth = b.strokeWidth;
-        var point = canvas.changeBasis(event.event.pageX, event.event.pageY);
-        path.add(point, point);
+        if(event.event.shiftKey) {
+            point = canvas.changeBasis(event.event.pageX, ptools.shiftKey.y);
+        } else {
+            point = canvas.changeBasis(event.event.pageX, event.event.pageY);
+        }
+        console.log(event.event)
+        path.add(point);
     }
         
 });
@@ -420,13 +509,28 @@ b.on('mousemove', function(event) {
     view.draw();
 });
 b.on('mouseup', function(event) {
-    path = path.reduce();
-    console.log(canvas.operations[canvas.operations.length-1])
+    if(ptools.revertTemp || !path) return;
+    console.log(`points added: ${path.segments.length}`);
+    var x = path.segments.length < 25 ? -1 : path.segments.length-2;
+    while(x > 0) {
+        path.removeSegment(x);
+        x-=2;
+    }
+    if(b.simplify) {
+        path.simplify(5);
+        console.log(`points added: ${path.segments.length}`);
+    }
+    path = null;
+    //console.log(canvas.operations[canvas.operations.length-1])
 }); 
 b.on('mousedown', function(event) {
-    if(event.event.buttons == 1) {
+    console.log(event)
+    if(event.event.button == 0) {
         path = new Path();
         canvas.operations.push(path.reduce());
+        b.firstY = event.event.pageY;
+        //path = canvas.operations.at(-1);
+        //canvas.action_stack.push(new Action())
     }
 });
 
@@ -441,29 +545,37 @@ let h = ptools.highlight;
     h.strokeColor = 'yellow';
     h.blendMode = 'darken';
     h.strokeWidth = 45;
-    h.opacity = 0.3;
+    h.opacity = 0.4;
 h.on('mousedrag', function(event) {
-    if(event.event.buttons == 1) {
+    if(ptools.revertTemp || !path) return;
+    if(event.event.button == 0) {
         h.minDistance = 5;
-        path = canvas.operations[canvas.operations.length-1];
         path.opacity = h.opacity;
         path.strokeColor = h.strokeColor;
         path.blendMode = h.blendMode;
         path.strokeWidth = h.strokeWidth;
         var point = canvas.changeBasis(event.event.pageX, event.event.pageY);
-        path.add(point, point);
+        path.add(point);
     }
-        
 });
 h.on('mousemove', function(event) {
     view.draw();
 });
 h.on('mouseup', function(event) {
-    path = path.reduce();
-    console.log(canvas.operations[canvas.operations.length-1])
+    if(ptools.revertTemp || !path) return;
+    var x = path.segments.length < 25 ? -1 : path.segments.length-2;
+    while(x > 0) {
+        path.removeSegment(x);
+        x-=2;
+    }
+    if(b.simplify) {
+        path.simplify(5);
+        console.log(`points added: ${path.segments.length}`);
+    }
+    path = null;
 }); 
 h.on('mousedown', function(event) {
-    if(event.event.buttons == 1) {
+    if(event.event.button == 0) {
         path = new Path();
         canvas.operations.push(path.reduce());
     }
@@ -491,7 +603,7 @@ e.on('mousedrag', function(event) {
     
 });
 e.on('mouseup', function(event) {
-    console.log(canvas.operations)
+    if(ptools.revertTemp) return;
     segs = []; minp = null;
     view.draw();
 }); 
@@ -517,6 +629,41 @@ function tactiv(elem, tool) {
     $("#toolbar_left").find("*").removeClass('selected')
     elem.addClass('selected');
 }
+
+function swcolor(which) {
+    ptools.activeColor = ptools.colors[which];
+}
+function updateCWLight() {
+    cwlight = Number.parseInt(document.querySelector('#cw_light_slider_input').value)/100;
+    let x = cwlight;
+    document.getElementById('cw_light').style.setProperty('background', `rgb(${x*255}, ${x*255},${x*255})`);
+}
+
+let cwspace = document.getElementById('cw_space');
+let cwpick = document.getElementById('cw_picker');
+let cwdown = false;
+let cwradius = 10;
+let cwx, cwy, cwt, cwr, cwhsl;
+let cwlight = 1;
+cwspace.addEventListener('mousemove', function(evt) {
+    if(cwdown) {
+        cwpick.style.setProperty('transform', `translateX(${evt.offsetX - cwradius}px) translateY(${evt.offsetY - cwradius}px)`);
+        cwx = evt.offsetX - cwradius - 80; cwy = evt.offsetY - cwradius - 80;
+        cwt = Math.atan2(cwy,cwx); cwr = Math.sqrt(cwx*cwx + cwy*cwy);
+        cwhsl = `hsl(${(cwt*-180 / Math.PI) - 90}, 100, 50)`
+        ptools.activeColor = cwhsl;
+        console.log(cwhsl);
+    } 
+})
+cwspace.addEventListener('mousedown', function(evt) {
+    cwdown = true;
+})
+cwspace.addEventListener('mouseup', function(evt) {
+    cwdown = false;
+})
+cwspace.addEventListener('mouseout', function(evt) {
+    cwdown = false;
+})
 
 
 /*

@@ -54,6 +54,8 @@ $md-breakpoint: 1000px;
     --border-round: 15px;
     --pulse-width: 15;
     --su: calc(1vw + 1vh);
+    --tool-color-1: red;
+    --tool-color-2: black;
 }
 html {
     @media only screen and (max-width: 700px) {
@@ -178,13 +180,39 @@ canvas {
         margin: 0;
         height: 60vh;
         padding: $pad;
+        #tool_divider {
+            padding: 0px $pad;
+            height: 3px;
+            background: rgba(146, 146, 146, 0.8);
+            margin-bottom: $pad;
+        }
+        #bt_color1 {
+            background: var(--tool-color-1);
+        }
+        #bt_color2 {
+            background: var(--tool-color-2);
+        }
         .button {
             background: white;
             padding: $pad;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             
             &.selected {
-                box-shadow: 0 0 20px rgba(92, 135, 205, 0.9);
+                animation: bounce_select alternate 3s infinite;
+                animation-timing-function: ease-in-out;
+
+                @keyframes bounce_select {
+                    0% {
+                        box-shadow: 0 0 20px rgba(92, 135, 205, 0.2);
+                    }
+                    50% {
+                        box-shadow: 0 0 10px rgba(92, 135, 205, 1);
+                    }
+                    100% {
+                        box-shadow: 0 0 20px rgba(92, 135, 205, 0.2);
+                    }
+                }
+
 
                 svg {
                     & * {
@@ -224,14 +252,6 @@ canvas {
             &:not(:last-child) {
                 margin-bottom: $pad;
             }
-            //background: url("https://img.icons8.com/material/24/000000/resize-four-directions--v2.png") !important;
-            // &.move {
-            //     background: url("https://img.icons8.com/material/96/000000/resize-four-directions--v2.png") white !important;
-            //     background-repeat: no-repeat !important;
-            //     background-position: 50% 50% !important;
-            //     background-size: 65% 65% !important;
-            // }
-            
         }
         
         svg {
