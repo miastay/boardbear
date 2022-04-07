@@ -177,12 +177,13 @@ paper.tools = {
 }
 var ptools = paper.tools;
 ptools.arr = [ptools['default'], ptools['move'], ptools['brush'], ptools['highlight'], ptools['erase'], ptools['picker']];
-ptools.colors = [{'color':'red','x':'0','y':'0','l':'50'}, {'color':'black','x':'0','y':'0','l':'0'}];
+ptools.colors = [{'color':'red','x':'0','y':'-10','l':'50'}, {'color':'black','x':'0','y':'0','l':'0'}];
 ptools.activeColor = 0;
 ptools.showColor = false;
 ptools.color = ptools.colors[ptools.activeColor];
 ptools.switchColors = function() {
     ptools.activeColor = Math.abs(ptools.activeColor - 1);
+    ptools.color = ptools.colors[ptools.activeColor];
 }
 ptools.setActiveTool = function(tool) {
     if(!tool) return;
@@ -359,7 +360,7 @@ b.on('mousedown', function(event) {
             canvas.operations.push(path.reduce());
             b.firstY = event.event.pageY;
         } break;
-        case 1 : {
+        case 2 : {
             ptools.switchColors();
         } break;
         default: {};
@@ -383,7 +384,7 @@ h.on('mousedrag', function(event) {
     if(event.event.button == 0) {
         h.minDistance = 5;
         path.opacity = h.opacity;
-        path.strokeColor = ptools.color;
+        path.strokeColor = ptools.colors[ptools.activeColor]['color'];
         path.blendMode = h.blendMode;
         path.strokeWidth = h.strokeWidth;
         var point = canvas.changeBasis(event.event.pageX, event.event.pageY);
@@ -407,9 +408,15 @@ h.on('mouseup', function(event) {
     path = null;
 }); 
 h.on('mousedown', function(event) {
-    if(event.event.button == 0) {
-        path = new Path();
-        canvas.operations.push(path.reduce());
+    switch(event.event.button) {
+        case 0: {
+            path = new Path();
+            canvas.operations.push(path.reduce());
+        } break;
+        case 2 : {
+            ptools.switchColors();
+        } break;
+        default: {};
     }
 });
 
