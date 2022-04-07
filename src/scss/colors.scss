@@ -5,23 +5,25 @@
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(200px);
     padding: 10px;
-    .hue, .sat, .light, #cw_space {
+    display: none;
+    .hue, .light, .dark, #cw_space {
         width: 180px;
         height: 180px;
         backdrop-filter: none;
         position: absolute;
+        display: block;
     }
     .hue {
         background: conic-gradient(red, magenta, blue, aqua, lime, yellow, red);
     }
-    .sat {
-        background: radial-gradient(white, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4),rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
-    }
     .light {
         background-color: white;
-        mix-blend-mode: add;
         z-index: 9;
-        filter: brightness(1);
+        opacity: 0;
+    }
+    .dark {
+        background-color: black;
+        z-index: 9;
         opacity: 0;
     }
     #cw_space {
@@ -35,9 +37,11 @@
         border-radius: 12.5px;
         position: absolute;
         border: solid 1px white;
+        border-color: white;
         z-index: 10;
         transform: translateX(0) translateY(0);
-        backdrop-filter: blur(100px);
+        background: var(--tool-color-0);
+        transition: border-color 1s ease;
     }
     #cw_light_slider {
         position: absolute;
